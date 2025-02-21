@@ -8,7 +8,7 @@ from modules.AddHintToLineSymmetry import AddHintToLineSymmetry
 from modules.UnifiedNumberOfHints import UnifiedNumberOfHints
 
 from modules.generateUniqueSolutionOriginal import generateUniqueSolutionOriginal
-from modules.generateUniqueSolutionG1 import generateUniqueSolutionG1
+from modules.generateUniqueSolution import generateUniqueSolutionG1
 from modules.generateUniqueSolutionG2 import generateUniqueSolutionG2
 from modules.generateUniqueSolutionG3 import generateUniqueSolutionG3
 

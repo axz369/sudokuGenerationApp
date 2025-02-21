@@ -3,20 +3,24 @@ import gurobipy as gp
 from gurobipy import GRB
 from utility.printBoard import printBoard
 
-
-def generateUniqueSolutionOriginal(board, MAX_SOLUTIONS, LIMIT_TIME):
+def generateUniqueSolution(board, MAX_SOLUTIONS, LIMIT_TIME):
     start_time = time.time()
+    timePerHint = []  # ヒントごとの生成時間を記録するリスト
     numberOfHintsAdded = 0  # 追加したヒントの数をカウントする変数
     numberOfGeneratedBoards = []  # 各内部ループで生成された解の数を保存するリスト
     currentSolution = None  # 唯一解を保存する変数
+    addedHintInformation = []  # ヒントの追加情報を保存するリスト
 
     print("唯一解生成開始")
     size = len(board)
     max_solutions = MAX_SOLUTIONS  # 生成する解の最大数
 
     while True:  # 外部ループ: 内部ループ内で解盤面が一つしか見つからなくなったら終了
+        hint_start_time = time.time()  # ヒント追加の開始時間を記録
         solution_count = 0  # 解の数をカウント
-        solutions = []  # 生成された解を保存するリスト（追加）
+
+        # 生成する解の最大数を設定
+        max_solutions = MAX_SOLUTIONS
 
         # 111~999の連続した配列 (0-indexedなので実際は[0][0][0]から[8][8][8])
         occurrence_count = [
@@ -69,7 +73,8 @@ def generateUniqueSolutionOriginal(board, MAX_SOLUTIONS, LIMIT_TIME):
             current_time = time.time()
             if current_time - start_time > LIMIT_TIME:  # LIMIT_TIMEを超えた場合
                 print("制限時間を超えたため処理を終了します。")
-                return None, None, numberOfHintsAdded, numberOfGeneratedBoards  # currentSolutionもNoneで返す
+                # currentSolutionもNoneで返す
+                return None, None, numberOfHintsAdded, numberOfGeneratedBoards, timePerHint, addedHintInformation
 
             # モデルの解決
             model.optimize()
@@ -82,9 +87,6 @@ def generateUniqueSolutionOriginal(board, MAX_SOLUTIONS, LIMIT_TIME):
                         for k in range(size):
                             if isValueInCell[i, j, k].x > 0.5:
                                 solution[i][j] = k + 1
-
-                # 解盤面を保存（追加）
-                solutions.append(solution)
 
                 # 111~999の連続した配列に情報を格納
                 for i in range(size):
@@ -99,6 +101,10 @@ def generateUniqueSolutionOriginal(board, MAX_SOLUTIONS, LIMIT_TIME):
                 model.addConstr(new_constraint <= max_matching_cells)
 
                 print(f"解 {solution_count}")
+
+                #↓解が見つかった報告を少なくしたいとき
+                #if(solution_count % 100 ==0):
+                #    print(f"解 {solution_count}")
                 # printBoard(solution)
             else:
                 print("全ての解盤面を生成しました。")
@@ -106,18 +112,16 @@ def generateUniqueSolutionOriginal(board, MAX_SOLUTIONS, LIMIT_TIME):
 
         print(f"生成された解の数: {solution_count}")
 
-        # 保存された解盤面を表示（検証のため、必要に応じてコメントアウトを外してください）
-        # for idx, sol in enumerate(solutions):
-        #     print(f"解盤面 {idx + 1}:")
-        #     printBoard(sol)
-
         numberOfGeneratedBoards.append(solution_count)
 
         if solution_count == 1:
+            hint_end_time = time.time()  # ヒント追加の終了時間を記録
+            hint_elapsed_time = hint_end_time - hint_start_time
+            timePerHint.append(hint_elapsed_time)
             print("唯一解が見つかりました。")
             print(f"追加したヒントの数: {numberOfHintsAdded}")
-            currentSolution = solutions[0]  # 唯一解を保存
-            return board, currentSolution, numberOfHintsAdded, numberOfGeneratedBoards
+            currentSolution = solution  # 唯一解を保存
+            return board, currentSolution, numberOfHintsAdded, numberOfGeneratedBoards, timePerHint, addedHintInformation
 
         # 最小出現回数のマスを見つける
         min_count = float('inf')
@@ -133,13 +137,17 @@ def generateUniqueSolutionOriginal(board, MAX_SOLUTIONS, LIMIT_TIME):
                             min_value = k + 1
 
         if min_pos is None:
+            hint_end_time = time.time()  # ヒント追加の終了時間を記録
+            hint_elapsed_time = hint_end_time - hint_start_time
+            timePerHint.append(hint_elapsed_time)
             print("エラー: 最小出現回数のマスが見つかりませんでした。")
-            return None, None, numberOfHintsAdded, numberOfGeneratedBoards
+            return None, None, numberOfHintsAdded, numberOfGeneratedBoards, timePerHint, addedHintInformation
 
         # 最小出現回数のマスを盤面に追加
         i, j = min_pos
         board[i][j] = min_value
         numberOfHintsAdded += 1  # ヒントを追加したのでカウントを増やす
+        addedHintInformation.append((i+1, j+1, min_value))  # 追加したヒントの位置と値を記録
         print(f"マス ({i + 1}, {j + 1}) に {min_value} を追加しました。")
         print(f"現在追加したヒントの数: {numberOfHintsAdded}")
 
@@ -147,8 +155,10 @@ def generateUniqueSolutionOriginal(board, MAX_SOLUTIONS, LIMIT_TIME):
         print("現在の盤面:")
         printBoard(board)
 
-        # ヒントを追加したので、保存した解盤面を削除（追加）
-        solutions.clear()
+        # ヒント追加の終了時間を記録
+        hint_end_time = time.time()
+        hint_elapsed_time = hint_end_time - hint_start_time
+        timePerHint.append(hint_elapsed_time)
 
     # While ループが正常に終了した場合（通常はここには到達しない）
-    return None, None, numberOfHintsAdded, numberOfGeneratedBoards
+    return None, None, numberOfHintsAdded, numberOfGeneratedBoards, timePerHint, addedHintInformation

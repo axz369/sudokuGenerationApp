@@ -4,13 +4,8 @@ import random  # ランダムなヒント追加のために追加
 
 from modules.ConvertToNumber import ConvertToNumber
 from modules.Validation import Validation
-from modules.AddHintToLineSymmetry import AddHintToLineSymmetry
 from modules.UnifiedNumberOfHints import UnifiedNumberOfHints
-
-from modules.generateUniqueSolutionOriginal import generateUniqueSolutionOriginal
-from modules.generateUniqueSolutionG1 import generateUniqueSolutionG1
-from modules.generateUniqueSolutionG2 import generateUniqueSolutionG2
-from modules.generateUniqueSolutionG3 import generateUniqueSolutionG3
+from modules.generateUniqueSolution import generateUniqueSolution
 
 from utility.generateSolutionBoardG import generateSolutionBoardG
 from utility.printBoard import printBoard
@@ -23,19 +18,10 @@ if __name__ == "__main__":
     INPUT_FILE = 'input9.json'
     INPUT_KEY = 'input2'
 
-    # 0: 再利用なし(オリジナル盤面保存あり) 1: 再利用なし(盤面保存なし) 2: 再利用あり(解の補充なし), 3: 再利用あり(解の補充あり)
-    ALGORITHM_CHOICE = 1
-
-    # 0: 規定値なし 1: 規定値あり．規定値になるまでランダム追加する
-    defaultValue = 0
-
-    # 1: 線対称にヒントを追加する, 0: 線対称ヒントを追加しない  
-    AddHintToLineTarget = 0  
-
-    LIMIT_TIME = 6000000000000000000
+    LIMIT_TIME = 1000
 
     if '9' in INPUT_FILE:
-        MAX_SOLUTIONS = 1000
+        MAX_SOLUTIONS = 100
         TARGET_HINT_COUNT = 16
     elif '16' in INPUT_FILE:
         MAX_SOLUTIONS = 300
@@ -87,137 +73,45 @@ if __name__ == "__main__":
         print("解盤面Aが生成されました")
         printBoard(converter.convertBack(boardA))
 
-    # AddHintToLineTarget の値に応じて処理を分岐
-    if AddHintToLineTarget == 1:
-        # 対称性に基づいたヒントを追加するクラスを作成
-        symmetryAdder = AddHintToLineSymmetry(
-            dataConvertedToNumbers['boardConvertedToNumber'], boardA)
+    
+    # 対称性に基づいたヒント追加をスキップし、ランダムにヒントを追加
 
-        # 4つの対称盤面を取得
-        symmetricBoards = symmetryAdder.getSymmetricBoards()
+    selectedBoard = [[0 for _ in range(maxNumber)]
+                    for _ in range(maxNumber)]  # 空の盤面を作成
+    positions = [(i, j) for i in range(maxNumber)
+                for j in range(maxNumber)]
+    random.shuffle(positions)
 
-        # 対称性タイプのリストを定義
-        symmetryTypes = ["horizontal", "vertical",
-                         "diagonal_up", "diagonal_down"]
+    # 入力盤面のヒントを追加
+    hints_added = 0
+    for i in range(maxNumber):
+        for j in range(maxNumber):
+            if dataConvertedToNumbers['boardConvertedToNumber'][i][j] != 0:
+                selectedBoard[i][j] = dataConvertedToNumbers['boardConvertedToNumber'][i][j]
+                hints_added += 1
 
-        # 対称軸に追加した直後の盤面を表示
-        print("******************************************")
-        print("対称軸に追加した直後の盤面:")
-        print("******************************************")
+    # 残りのヒントをランダムに追加
+    for pos in positions:
+        if hints_added >= TARGET_HINT_COUNT:
+            break
+        i, j = pos
+        if selectedBoard[i][j] == 0:
+            selectedBoard[i][j] = boardA[i][j]
+            hints_added += 1
 
-        for symmetry_type, board in zip(symmetryTypes, symmetricBoards):
-            print(f"\n{symmetry_type}Symmetry:")
-            printBoard(converter.convertBack(board))
-
-        # ヒント数の統一処理
-        hintUnifier = UnifiedNumberOfHints(
-            symmetricBoards, boardA, targetHintCount=TARGET_HINT_COUNT)
-        unifiedBoards = hintUnifier.unifyHints()
-
-        # ヒント数統一後の盤面を表示
-        print("\n******************************************")
-        print("ヒント数統一後の盤面:")
-        print("******************************************")
-        for symmetry_type, board in zip(symmetryTypes, unifiedBoards):
-            print(f"\n{symmetry_type}Symmetry:")
-            printBoard(converter.convertBack(board))
-
-        # 4盤面から選択
-        while True:
-            print("\nどの盤面を選びますか?")
-            for i, name in enumerate(symmetryTypes):
-                print(f"{i + 1}: {name}Symmetry")
-
-            try:
-                choice = int(input("選択: ")) - 1
-                if 0 <= choice < len(symmetryTypes):
-                    selectedBoard = unifiedBoards[choice]
-                    selectedBoardName = f"{symmetryTypes[choice]}Symmetry"
-                    break
-                else:
-                    print("無効な選択です。もう一度選んでください。")
-            except ValueError:
-                print("無効な入力です。数字で選択してください。")
-
-        print(f"選ばれた盤面 : {selectedBoardName}")
-        printBoard(selectedBoard)
-
-    else:
-        # 対称性に基づいたヒント追加をスキップし、ランダムにヒントを追加
-
-        if(defaultValue==1) : 
-            selectedBoard = [[0 for _ in range(maxNumber)]
-                            for _ in range(maxNumber)]  # 空の盤面を作成
-            positions = [(i, j) for i in range(maxNumber)
-                        for j in range(maxNumber)]
-            random.shuffle(positions)
-
-            # 入力盤面のヒントを追加
-            hints_added = 0
-            for i in range(maxNumber):
-                for j in range(maxNumber):
-                    if dataConvertedToNumbers['boardConvertedToNumber'][i][j] != 0:
-                        selectedBoard[i][j] = dataConvertedToNumbers['boardConvertedToNumber'][i][j]
-                        hints_added += 1
-
-            # 残りのヒントをランダムに追加
-            for pos in positions:
-                if hints_added >= TARGET_HINT_COUNT:
-                    break
-                i, j = pos
-                if selectedBoard[i][j] == 0:
-                    selectedBoard[i][j] = boardA[i][j]
-                    hints_added += 1
-
-            selectedBoardName = "Random Hints"
-            print("対称性に基づいたヒント追加をスキップし、解盤面Aからランダムにヒントを追加しました。")
-            print(f"選ばれた盤面 : {selectedBoardName}")
-            printBoard(selectedBoard)
-
-        else :
-            selectedBoard = [[0 for _ in range(maxNumber)]
-                            for _ in range(maxNumber)]  # 空の盤面を作成
-            positions = [(i, j) for i in range(maxNumber)
-                        for j in range(maxNumber)]
-            random.shuffle(positions)
-
-            # 入力盤面のヒントを追加
-            hints_added = 0
-            for i in range(maxNumber):
-                for j in range(maxNumber):
-                    if dataConvertedToNumbers['boardConvertedToNumber'][i][j] != 0:
-                        selectedBoard[i][j] = dataConvertedToNumbers['boardConvertedToNumber'][i][j]
-                        hints_added += 1
-
-            selectedBoardName = "Random Hints"
-            print("対称性に基づいたヒント追加, 規定値へのランダム追加をスキップしました")
-            print(f"選ばれた盤面 : {selectedBoardName}")
-            printBoard(selectedBoard)
+    selectedBoardName = "Random Hints"
+    print(f"選ばれた盤面 : {selectedBoardName}")
+    printBoard(selectedBoard)
 
     # 唯一解の生成
     startTime = time.time()
 
-    if ALGORITHM_CHOICE == 0:
-        problemExample, uniqueSolution, numberOfHintsAdded, solutionsPerIteration = generateUniqueSolutionOriginal(
-            selectedBoard, MAX_SOLUTIONS, LIMIT_TIME)
-        numberOfGeneratedBoards = solutionsPerIteration  # 変数名を統一
-        numberOfReusedSolutions = [0] * \
-            len(solutionsPerIteration)  # 再利用した解の数は0
-    elif ALGORITHM_CHOICE == 1:  # 問題例,解盤面,追加したヒントの数,再利用した解盤面数
-        problemExample, uniqueSolution, numberOfHintsAdded, solutionsPerIteration, timePerHint, addedHintInformation = generateUniqueSolutionG1(
-            selectedBoard, MAX_SOLUTIONS, LIMIT_TIME)
-        numberOfGeneratedBoards = solutionsPerIteration  # 変数名を統一
-        numberOfReusedSolutions = [0] * \
-            len(solutionsPerIteration)  # 再利用した解の数は0
-    elif ALGORITHM_CHOICE == 2:
-        problemExample, uniqueSolution, numberOfHintsAdded, solutionsPerIteration = generateUniqueSolutionG2(
-            selectedBoard, MAX_SOLUTIONS, LIMIT_TIME)
-        numberOfGeneratedBoards = solutionsPerIteration  # 変数名を統一
-        numberOfReusedSolutions = [0] * \
-            len(solutionsPerIteration)  # 再利用した解の数は0
-    elif ALGORITHM_CHOICE == 3:  # 問題例,解盤面,追加したヒントの数,再利用した解盤面数
-        problemExample, uniqueSolution, numberOfHintsAdded, numberOfGeneratedBoards, numberOfReusedSolutions = generateUniqueSolutionG3(
-            selectedBoard, MAX_SOLUTIONS, LIMIT_TIME)
+    # 問題例,解盤面,追加したヒントの数,再利用した解盤面数
+    problemExample, uniqueSolution, numberOfHintsAdded, solutionsPerIteration, timePerHint, addedHintInformation = generateUniqueSolution(
+        selectedBoard, MAX_SOLUTIONS, LIMIT_TIME)
+    numberOfGeneratedBoards = solutionsPerIteration  # 変数名を統一
+    numberOfReusedSolutions = [0] * \
+        len(solutionsPerIteration)
 
     endTime = time.time()
 
