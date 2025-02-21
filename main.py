@@ -32,31 +32,20 @@ if __name__ == "__main__":
     # 1: 線対称にヒントを追加する, 0: 線対称ヒントを追加しない  
     AddHintToLineTarget = 0  
 
-    # 0 : 毎回MAX_SOLUTIONS個生成．1:generationLimitsに格納された上限数をヒント追加ごとに設定
-    changeGenerationLimit = 0
-
     LIMIT_TIME = 6000000000000000000
 
     if '9' in INPUT_FILE:
         MAX_SOLUTIONS = 1000
         TARGET_HINT_COUNT = 16
-        generationLimits = [100, 100, 100, 100, 100, 1000, 2000,
-                           2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000]
     elif '16' in INPUT_FILE:
         MAX_SOLUTIONS = 300
         TARGET_HINT_COUNT = 51
-        generationLimits = [1000, 1000, 1000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000,
-                           2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000]
     elif '25' in INPUT_FILE:
         MAX_SOLUTIONS = 20
         TARGET_HINT_COUNT = 250
-        generationLimits = [1000, 1000, 1000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000,
-                           2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000]
     else:
         MAX_SOLUTIONS = 10
-        TARGET_HINT_COUNT = 200
-        generationLimits = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-                           1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000]
+        TARGET_HINT_COUNT = 20
     #########################################################
 
     # JSONファイルを読み込む
@@ -216,7 +205,7 @@ if __name__ == "__main__":
             len(solutionsPerIteration)  # 再利用した解の数は0
     elif ALGORITHM_CHOICE == 1:  # 問題例,解盤面,追加したヒントの数,再利用した解盤面数
         problemExample, uniqueSolution, numberOfHintsAdded, solutionsPerIteration, timePerHint, addedHintInformation = generateUniqueSolutionG1(
-            selectedBoard, MAX_SOLUTIONS, LIMIT_TIME, changeGenerationLimit, generationLimits)
+            selectedBoard, MAX_SOLUTIONS, LIMIT_TIME)
         numberOfGeneratedBoards = solutionsPerIteration  # 変数名を統一
         numberOfReusedSolutions = [0] * \
             len(solutionsPerIteration)  # 再利用した解の数は0

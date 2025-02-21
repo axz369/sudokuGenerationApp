@@ -5,7 +5,7 @@ from utility.printBoard import printBoard
 
 # 解盤面の保存なし
 
-def generateUniqueSolutionG1(board, MAX_SOLUTIONS, LIMIT_TIME, changeGenerationLimit, generationLimits):
+def generateUniqueSolutionG1(board, MAX_SOLUTIONS, LIMIT_TIME):
     start_time = time.time()
     timePerHint = []  # ヒントごとの生成時間を記録するリスト
     numberOfHintsAdded = 0  # 追加したヒントの数をカウントする変数
@@ -22,13 +22,7 @@ def generateUniqueSolutionG1(board, MAX_SOLUTIONS, LIMIT_TIME, changeGenerationL
         solution_count = 0  # 解の数をカウント
 
         # 生成する解の最大数を設定
-        if changeGenerationLimit == 0:
-            max_solutions = MAX_SOLUTIONS
-        else:
-            if numberOfHintsAdded < len(generationLimits):
-                max_solutions = generationLimits[numberOfHintsAdded]
-            else:
-                max_solutions = generationLimits[-1]  # リストの最後の要素を使用
+        max_solutions = MAX_SOLUTIONS
 
         # 111~999の連続した配列 (0-indexedなので実際は[0][0][0]から[8][8][8])
         occurrence_count = [
