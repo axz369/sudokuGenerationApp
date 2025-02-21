@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
+from models.main import generate_sudoku  # models フォルダ内の main.py からインポート
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
     return render_template('index.html')
-
 
 @app.route('/submit', methods=['POST'])
 def submit_sudoku():
@@ -26,14 +26,12 @@ def submit_sudoku():
     for row in board:
         print(row)
 
-    # improvementMain.pyのprocess_sudoku関数をインポート
-    from models.improvementMain import process_sudoku
+    # generate_sudoku 関数に board を渡して結果を受け取る
+    result = generate_sudoku(board)
 
-    # process_sudoku関数にboardを渡して結果を受け取る
-    result = process_sudoku(board)
-
-    # 処理結果をレスポンスとして返す
-    return jsonify({"message": "数独データを受け取りました！", "result": result}), 200
+    # 結果をリダイレクトで渡す
+    result_message = "数独の解決結果: " + str(result)  # 結果のメッセージを作成
+    return redirect(url_for('result', result_message=result_message))
 
 @app.route('/result')
 def result():
