@@ -13,13 +13,15 @@
             {% for row in range(9) %}
                 <tr>
                     {% for col in range(9) %}
-                        <td><input type="text" id="cell-{{ row }}-{{ col }}" size="2"></td>
+                        <td><input type="text" id="cell-{{ row }}-{{ col }}" size="3" maxlength="1"></td>
                     {% endfor %}
                 </tr>
             {% endfor %}
         </table>
         <button type="submit">Submit</button>
     </form>
+
+    <div id="result"></div>
 
     <script>
         document.getElementById('sudoku-form').addEventListener('submit', function(event) {
@@ -29,8 +31,8 @@
             for (let row = 0; row < 9; row++) {
                 let rowData = [];
                 for (let col = 0; col < 9; col++) {
-                    let cellValue = document.getElementById(`cell-${row}-${col}`).value;
-                    rowData.push(cellValue);
+                    let cellValue = document.getElementById(`cell-${row}-${col}`).value.trim();
+                    rowData.push(cellValue ? cellValue : "");  // 空文字も許容
                 }
                 board.push(rowData);
             }
@@ -41,10 +43,22 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ board: board })
+                body: JSON.stringify({
+                    input: {
+                        size: 9,
+                        board: board
+                    }
+                })
             })
             .then(response => response.json())
-            .then(data => alert('データが送信されました！'))
+            .then(data => {
+                if (data.board) {
+                    // 解決された数独を表示
+                    document.getElementById('result').innerHTML = '解決された数独:<br><pre>' + JSON.stringify(data.board, null, 2) + '</pre>';
+                } else {
+                    document.getElementById('result').innerText = 'エラー: ' + data.error;
+                }
+            })
             .catch(error => console.error('エラー:', error));
         });
     </script>

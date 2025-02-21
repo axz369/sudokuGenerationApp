@@ -1,9 +1,9 @@
 class Validation:
-    def __init__(self, charToNumberMap, board, maxNumber):
+    def __init__(self, charToNumberMap, board, size):
         self.charToNumberMap = charToNumberMap
         self.board = board
-        self.maxNumber = maxNumber
-        self.subBlockSize = int(maxNumber ** 0.5)
+        self.size = size
+        self.subBlockSize = int(size ** 0.5)
         self.MAX_RECURSION_DEPTH = 1000  # 再帰の最大深さを設定
 
     def check(self):
@@ -37,9 +37,9 @@ class Validation:
         return True
 
     def checkColumns(self):
-        for col in range(self.maxNumber):
+        for col in range(self.size):
             values = []
-            for row in range(self.maxNumber):
+            for row in range(self.size):
                 val = self.board[row][col]
                 if val != 0:
                     if val in values:
@@ -65,7 +65,7 @@ class Validation:
         return True
 
     def checkCharCount(self):
-        if len(self.charToNumberMap) > self.maxNumber:
-            print(f"Validation失敗 : 入力された盤面の文字の種類数 {len(self.charToNumberMap)} が最大値 {self.maxNumber} を超えています。")
+        if len(self.charToNumberMap) > self.size:
+            print(f"Validation失敗 : 入力された盤面の文字の種類数 {len(self.charToNumberMap)} が最大値 {self.size} を超えています。")
             return False
         return True

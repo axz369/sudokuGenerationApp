@@ -1,27 +1,29 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify
 from models.main import generate_sudoku  # models フォルダ内の main.py からインポート
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
+    # メインページを表示
     return render_template('index.html')
 
+@app.route('/submit', methods=['POST'])
 @app.route('/submit', methods=['POST'])
 def submit_sudoku():
     # フロントエンドから送信されたJSONデータを取得
     data = request.get_json()
 
-    # データの検証：ボードが含まれていない場合はエラーレスポンスを返す
-    if not data or 'board' not in data:
+    # データの検証：inputキーが含まれているかを確認
+    if not data or 'input' not in data or 'board' not in data['input']:
         return jsonify({"error": "No board data received"}), 400
 
     # 受け取ったデータを表示
-    print("Received Sudoku board data:")
+    print("Received data:")
     print(data)
 
-    # ボードのデータを取り出して、必要な処理を実行
-    board = data['board']
+    # board のデータを input キーの下から取り出す
+    board = data['input']['board']
     print("Board:")
     for row in board:
         print(row)
@@ -29,17 +31,15 @@ def submit_sudoku():
     # generate_sudoku 関数に board を渡して結果を受け取る
     result = generate_sudoku(board)
 
-    # 結果をリダイレクトで渡す
-    result_message = "数独の解決結果: " + str(result)  # 結果のメッセージを作成
-    return redirect(url_for('result', result_message=result_message))
+    # 結果を辞書型で返す（サイズとボードを含む）
+    result_data = {
+        "size": len(board),  # ボードのサイズ
+        "board": result  # 解決されたボード
+    }
 
-@app.route('/result')
-def result():
-    # リダイレクトで渡されたメッセージを取得
-    result_message = request.args.get('result_message', '結果がありません。')
-    
-    # 結果をページに表示
-    return render_template('result.html', result_message=result_message)
+    # 結果をJSON形式で返す
+    return jsonify(result_data)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

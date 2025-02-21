@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
 import time
-import json
 import random
 
 from models.ConvertToNumber import ConvertToNumber
@@ -13,52 +12,70 @@ from models.printBoard import printBoard
 
 app = Flask(__name__)
 
+
 @app.route("/generate_sudoku", methods=["POST"])
-def generate_sudoku():
-    # リクエストから必要なデータを取得
-    data = request.json
-    
-    INPUT_FILE = data.get('INPUT_FILE', 'input9.json')
-    INPUT_KEY = data.get('INPUT_KEY', 'input2')
+def generate_sudoku(board):
+    # リクエストからJSONデータを取得
+    data = request.get_json()
+
+    # JSONデータが正しいか確認
+    if not data or 'input' not in data:
+        return jsonify({"error": "No input data received"}), 400
+
+    # boardデータとsizeを取得
+    input_data = data['input']
+    size = int(input_data['size'])
+    board = input_data['board']
+
+    print("サイズ")
+    print(size)
+    print("ボード")
+    print(board)
+
+    # 盤面内の空データを文字列の "0" に変換する
+    for i in range(size):
+        for j in range(size):
+            if board[i][j] == '' or board[i][j] is None:
+                board[i][j] = '0'
+
+    print("空データを'0'に変換後のボード")
+    print(board)
+
+    # デフォルト値と設定を取得
     defaultValue = data.get('defaultValue', 0)
     AddHintToLineTarget = data.get('AddHintToLineTarget', 0)
     LIMIT_TIME = data.get('LIMIT_TIME', 6000000000000000000)
-    
+
     # 最大解数とターゲットヒント数を設定
-    if '9' in INPUT_FILE:
-        MAX_SOLUTIONS = 1000
+    if size == 9:
+        MAX_SOLUTIONS = 100
         TARGET_HINT_COUNT = 16
-    elif '16' in INPUT_FILE:
+    elif size == 16:
         MAX_SOLUTIONS = 300
         TARGET_HINT_COUNT = 51
-    elif '25' in INPUT_FILE:
+    elif size == 25:
         MAX_SOLUTIONS = 20
         TARGET_HINT_COUNT = 250
     else:
         MAX_SOLUTIONS = 10
         TARGET_HINT_COUNT = 20
-    
-    # JSONファイルを読み込む
-    with open(INPUT_FILE, 'r', encoding="utf-8") as file:
-        file_data = json.load(file)
-
-    # 使用する数独の問題を選択
-    sudokuProblem = file_data["inputs"][INPUT_KEY]
-    board = sudokuProblem["board"]
-    maxNumber = sudokuProblem["maxNumber"]
 
     # 盤面の文字を数値に変換
-    converter = ConvertToNumber(board, maxNumber)
+    converter = ConvertToNumber(board, size)
     dataConvertedToNumbers = converter.getConvertedData()
+
+    print("数字へ変換後のデータ")
+    print(dataConvertedToNumbers)
 
     # Validationクラスを使用して入力ファイルの正当性チェック
     validator = Validation(
-        dataConvertedToNumbers['charToNumberMap'], dataConvertedToNumbers['boardConvertedToNumber'], maxNumber)
+        dataConvertedToNumbers['charToNumberMap'], dataConvertedToNumbers['boardConvertedToNumber'], size)
     if not validator.check():
         return jsonify({"error": "バリデーション失敗"}), 400
 
     # generateSolutionBoard関数を使用して解盤面Aを取得
-    boardA = [row[:] for row in dataConvertedToNumbers['boardConvertedToNumber']]
+    boardA = [row[:]
+              for row in dataConvertedToNumbers['boardConvertedToNumber']]
     isSolutionGenerated = generateSolutionBoardA(boardA)
     if not isSolutionGenerated:
         return jsonify({"error": "解盤面Aの生成に失敗しました"}), 400
@@ -68,8 +85,9 @@ def generate_sudoku():
         symmetryAdder = AddHintToLineSymmetry(
             dataConvertedToNumbers['boardConvertedToNumber'], boardA)
         symmetricBoards = symmetryAdder.getSymmetricBoards()
-        symmetryTypes = ["horizontal", "vertical", "diagonal_up", "diagonal_down"]
-        
+        symmetryTypes = ["horizontal", "vertical",
+                         "diagonal_up", "diagonal_down"]
+
         # ヒント数の統一処理
         hintUnifier = UnifiedNumberOfHints(
             symmetricBoards, boardA, targetHintCount=TARGET_HINT_COUNT)
@@ -81,14 +99,14 @@ def generate_sudoku():
 
     else:
         # ランダムにヒントを追加
-        selectedBoard = [[0 for _ in range(maxNumber)] for _ in range(maxNumber)]
-        positions = [(i, j) for i in range(maxNumber) for j in range(maxNumber)]
+        selectedBoard = [[0 for _ in range(size)] for _ in range(size)]
+        positions = [(i, j) for i in range(size) for j in range(size)]
         random.shuffle(positions)
 
         # 入力盤面のヒントを追加
         hints_added = 0
-        for i in range(maxNumber):
-            for j in range(maxNumber):
+        for i in range(size):
+            for j in range(size):
                 if dataConvertedToNumbers['boardConvertedToNumber'][i][j] != 0:
                     selectedBoard[i][j] = dataConvertedToNumbers['boardConvertedToNumber'][i][j]
                     hints_added += 1
@@ -103,11 +121,12 @@ def generate_sudoku():
                 hints_added += 1
 
         selectedBoardName = "Random Hints"
-    
+
     # 唯一解の生成
     startTime = time.time()
     problemExample, uniqueSolution, numberOfHintsAdded, solutionsPerIteration, timePerHint, addedHintInformation = generateUniqueSolution(
         selectedBoard, MAX_SOLUTIONS, LIMIT_TIME)
+    print("生成終わり")
     endTime = time.time()
 
     if uniqueSolution:
@@ -122,6 +141,7 @@ def generate_sudoku():
 
     else:
         return jsonify({"error": "唯一解の生成に失敗しました"}), 400
+
 
 if __name__ == "__main__":
     app.run(debug=True)
