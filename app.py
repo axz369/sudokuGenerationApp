@@ -6,9 +6,6 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
-@app.route('/input9')
-def input9():
-    return render_template('sudoku_input9.html')
 
 @app.route('/submit', methods=['POST'])
 def submit_sudoku():
