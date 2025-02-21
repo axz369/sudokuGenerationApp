@@ -1,7 +1,7 @@
 import gurobipy as gp
 from gurobipy import GRB
 
-def generateSolutionBoardG(board):
+def generateSolutionBoardA(board):
     max_number = len(board)  # ボードの長さから max_number を自動で取得
 
     # 問題の定義
@@ -72,7 +72,7 @@ def generateSolutionBoardG(board):
 # mainから呼び出される関数
 def generateSolutionBoardWrapper(board):
     board_copy = [row[:] for row in board]
-    if generateSolutionBoardG(board_copy):
+    if generateSolutionBoardA(board_copy):
         for i in range(len(board)):
             for j in range(len(board)):
                 board[i][j] = board_copy[i][j]

@@ -5,7 +5,7 @@ import random  # ランダムなヒント追加のために追加
 from modules.ConvertToNumber import ConvertToNumber
 from modules.Validation import Validation
 from modules.generateUniqueSolution import generateUniqueSolution
-from utility.generateSolutionBoardG import generateSolutionBoardG
+from backend.models.utility.generateSolutionBoardA import generateSolutionBoardA
 from utility.printBoard import printBoard
 
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     boardA = [row[:]
               for row in dataConvertedToNumbers['boardConvertedToNumber']]
 
-    isSolutionGenerated = generateSolutionBoardG(boardA)
+    isSolutionGenerated = generateSolutionBoardA(boardA)
 
     if not isSolutionGenerated:
         print("解盤面Aの生成に失敗しました。")
