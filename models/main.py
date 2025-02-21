@@ -48,7 +48,7 @@ def generate_sudoku(board):
 
     # 最大解数とターゲットヒント数を設定
     if size == 9:
-        MAX_SOLUTIONS = 10
+        MAX_SOLUTIONS = 100
         TARGET_HINT_COUNT = 16
     elif size == 16:
         MAX_SOLUTIONS = 300

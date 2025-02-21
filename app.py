@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, Response
 from models.main import generate_sudoku  # models フォルダ内の main.py からインポート
+import time
 
 app = Flask(__name__)
 
@@ -27,6 +28,9 @@ def submit_sudoku():
     for row in board:
         print(row)
 
+    # 解決の開始時間を記録
+    start_time = time.time()
+
     # generate_sudoku 関数に board を渡して結果を受け取る
     result = generate_sudoku(board)  # generate_sudoku関数に直接渡す
 
@@ -37,10 +41,16 @@ def submit_sudoku():
     if isinstance(result, Response):
         result = result.get_json()  # JSONデータを取り出す
 
-    # 結果を辞書型で返す（サイズとボードを含む）
+    # 結果を構造体に格納
+    problem_board = board  # 受け取ったボードを問題ボードとして設定
+    solution_board = result  # 解決されたボードをソリューションボードとして設定
+    generation_time = round(time.time() - start_time, 2)  # 解決にかかった時間（秒）
+
+    # 結果を辞書型で返す（問題ボード、ソリューションボード、生成時間を含む）
     result_data = {
-        "size": len(board),  # ボードのサイズ
-        "board": result  # 解決されたボード
+        "problemBoard": problem_board,
+        "solutionBoard": solution_board,
+        "generationTime": generation_time
     }
 
     print(type(result_data))
