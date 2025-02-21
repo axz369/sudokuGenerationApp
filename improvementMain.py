@@ -4,14 +4,7 @@ import random  # ランダムなヒント追加のために追加
 
 from modules.ConvertToNumber import ConvertToNumber
 from modules.Validation import Validation
-from modules.AddHintToLineSymmetry import AddHintToLineSymmetry
-from modules.UnifiedNumberOfHints import UnifiedNumberOfHints
-
-from modules.generateUniqueSolutionOriginal import generateUniqueSolutionOriginal
-from modules.generateUniqueSolution import generateUniqueSolutionG1
-from modules.generateUniqueSolutionG2 import generateUniqueSolutionG2
-from modules.generateUniqueSolutionG3 import generateUniqueSolutionG3
-
+from modules.generateUniqueSolution import generateUniqueSolution
 from utility.generateSolutionBoardG import generateSolutionBoardG
 from utility.printBoard import printBoard
 
@@ -23,25 +16,13 @@ if __name__ == "__main__":
     INPUT_FILE = 'input9.json'
     INPUT_KEY = 'input1'
 
-    # 0: 再利用なし(オリジナル盤面保存あり)
-    # 1: 再利用なし(盤面保存なし)
-    # 2: 再利用あり(解の補充なし)
-    # 3: 再利用あり(解の補充あり)
-    ALGORITHM_CHOICE = 1
-    AddHintToLineTarget = 0  # 1: 線対称にヒントを追加する, 0: 線対称ヒントを追加しない
-    # 0: 毎回MAX_SOLUTIONS個生成．1: generationLimitsに格納された上限数をヒント追加ごとに設定
-    changeGenerationLimit = 0
-
     # 全体の時間制限を30分に設定
-    TOTAL_LIMIT_TIME = 3600  # 30分を秒に換算
-
-    # 早期終了を有効にするかどうか (0: 無効, 1: 有効)
-    EARLY_TERMINATION_ENABLED = 0  # 0または1で設定
+    TOTAL_LIMIT_TIME = 30  # 30分を秒に換算
 
     #########################################################
 
     # JSONファイルを読み込む
-    with open(INPUT_FILE, 'r') as file:
+    with open(INPUT_FILE, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
     # 使用する数独の問題を選択
@@ -131,44 +112,42 @@ if __name__ == "__main__":
         # 唯一解の生成の開始時間
         startTime = time.time()
 
-        # ランダムにヒントを追加する
-        if AddHintToLineTarget == 1:
-            # 対称性に基づいたヒント追加の処理（必要に応じて実装）
-            pass
-        else:
-            # ランダムにヒントを追加
-            selectedBoard = [[0 for _ in range(maxNumber)]
-                             for _ in range(maxNumber)]  # 空の盤面を作成
-            positions = [(i, j) for i in range(maxNumber)
-                         for j in range(maxNumber)]
-            random.shuffle(positions)
+        # ランダムにヒントを追加
+        selectedBoard = [[0 for _ in range(maxNumber)]
+                            for _ in range(maxNumber)]  # 空の盤面を作成
+        positions = [(i, j) for i in range(maxNumber)
+                        for j in range(maxNumber)]
+        random.shuffle(positions)
 
-            # 入力盤面のヒントを追加
-            hints_added = 0
-            for i in range(maxNumber):
-                for j in range(maxNumber):
-                    if dataConvertedToNumbers['boardConvertedToNumber'][i][j] != 0:
-                        selectedBoard[i][j] = dataConvertedToNumbers['boardConvertedToNumber'][i][j]
-                        hints_added += 1
-
-            # 残りのヒントをランダムに追加
-            for pos in positions:
-                if hints_added >= TARGET_HINT_COUNT:
-                    break
-                i, j = pos
-                if selectedBoard[i][j] == 0:
-                    selectedBoard[i][j] = boardA[i][j]
+        # 入力盤面のヒントを追加
+        hints_added = 0
+        for i in range(maxNumber):
+            for j in range(maxNumber):
+                if dataConvertedToNumbers['boardConvertedToNumber'][i][j] != 0:
+                    selectedBoard[i][j] = dataConvertedToNumbers['boardConvertedToNumber'][i][j]
                     hints_added += 1
 
-            selectedBoardName = "Random Hints"
-            print(
-                "対称性に基づいたヒント追加をスキップし、解盤面Aからランダムにヒントを追加しました。")
-            print(f"選ばれた盤面 : {selectedBoardName}")
-            printBoard(selectedBoard)
+        # 残りのヒントをランダムに追加
+        for pos in positions:
+            if hints_added >= TARGET_HINT_COUNT:
+                break
+            i, j = pos
+            if selectedBoard[i][j] == 0:
+                selectedBoard[i][j] = boardA[i][j]
+                hints_added += 1
+
+        selectedBoardName = "Random Hints"
+        print(
+            "対称性に基づいたヒント追加をスキップし、解盤面Aからランダムにヒントを追加しました。")
+        print(f"選ばれた盤面 : {selectedBoardName}")
+        printBoard(selectedBoard)
+
+
+
 
         # maxNumberに応じた設定
         if maxNumber == 9:
-            MAX_SOLUTIONS = 1000
+            MAX_SOLUTIONS = 100
             # TARGET_ADDED_HINTS は既に設定済み
         elif maxNumber == 16:
             MAX_SOLUTIONS = None  # 上限盤面数を特に設定しない
@@ -180,56 +159,41 @@ if __name__ == "__main__":
             MAX_SOLUTIONS = 100
             # TARGET_ADDED_HINTS は None
 
-        if ALGORITHM_CHOICE == 1:
-            if changeGenerationLimit == 0:
-                generationLimits = None
-            else:
-                # generationLimitsを設定する必要がある場合はここで設定
-                generationLimits = None  # 必要に応じて設定
+        generationLimits = 0  # 必要に応じて設定
 
-            # selectedBoard のコピーを作成
-            currentBoard = [row[:] for row in selectedBoard]
+        # selectedBoard のコピーを作成
+        currentBoard = [row[:] for row in selectedBoard]
 
-            problemExample, uniqueSolution, numberOfHintsAdded, solutionsPerIteration, timePerHint, newAddedHintInformation= generateUniqueSolutionG1(
-                currentBoard, MAX_SOLUTIONS, TOTAL_LIMIT_TIME - (current_time - total_start_time), changeGenerationLimit, generationLimits)
-            addedHintInformations.append(newAddedHintInformation)
-            endTime = time.time()
 
-            # チャレンジの情報を保存
-            challenge_times.append(endTime - startTime)
-            challenge_problem_examples.append(problemExample)
-            challenge_unique_solutions.append(uniqueSolution)
-            challenge_added_hints.append(numberOfHintsAdded)
-            challenge_solutions_per_iteration.append(solutionsPerIteration)
-            challenge_time_per_hint.append(timePerHint)
+        problemExample, uniqueSolution, numberOfHintsAdded, solutionsPerIteration, timePerHint, newAddedHintInformation= generateUniqueSolution(
+            currentBoard, MAX_SOLUTIONS, TOTAL_LIMIT_TIME - (current_time - total_start_time))
+        addedHintInformations.append(newAddedHintInformation)
+        endTime = time.time()
 
-            # 'problemExample' と 'uniqueSolution' が有効かどうかをチェック
-            if problemExample is not None and uniqueSolution is not None:
-                # 最良の盤面を更新
-                if min_added_hints is None or numberOfHintsAdded < min_added_hints:
-                    min_added_hints = numberOfHintsAdded
-                    best_problem_examples = [problemExample]
-                    best_unique_solutions = [uniqueSolution]
-                    best_solutions_per_iterations = [solutionsPerIteration]
-                    best_time_per_hints = [timePerHint]
-                elif numberOfHintsAdded == min_added_hints:
-                    best_problem_examples.append(problemExample)
-                    best_unique_solutions.append(uniqueSolution)
-                    best_solutions_per_iterations.append(solutionsPerIteration)
-                    best_time_per_hints.append(timePerHint)
-            else:
-                print("唯一解の生成に失敗しました。")
+        # チャレンジの情報を保存
+        challenge_times.append(endTime - startTime)
+        challenge_problem_examples.append(problemExample)
+        challenge_unique_solutions.append(uniqueSolution)
+        challenge_added_hints.append(numberOfHintsAdded)
+        challenge_solutions_per_iteration.append(solutionsPerIteration)
+        challenge_time_per_hint.append(timePerHint)
 
-            # EARLY_TERMINATION_ENABLED が 1 で、TARGET_ADDED_HINTS が設定されている場合の早期終了条件
-            if EARLY_TERMINATION_ENABLED == 1 and TARGET_ADDED_HINTS is not None:
-                if numberOfHintsAdded <= TARGET_ADDED_HINTS:
-                    print(
-                        f"追加ヒント数が {TARGET_ADDED_HINTS} 以下の盤面が見つかったため、処理を終了します。")
-                    break
-
+        # 'problemExample' と 'uniqueSolution' が有効かどうかをチェック
+        if problemExample is not None and uniqueSolution is not None:
+            # 最良の盤面を更新
+            if min_added_hints is None or numberOfHintsAdded < min_added_hints:
+                min_added_hints = numberOfHintsAdded
+                best_problem_examples = [problemExample]
+                best_unique_solutions = [uniqueSolution]
+                best_solutions_per_iterations = [solutionsPerIteration]
+                best_time_per_hints = [timePerHint]
+            elif numberOfHintsAdded == min_added_hints:
+                best_problem_examples.append(problemExample)
+                best_unique_solutions.append(uniqueSolution)
+                best_solutions_per_iterations.append(solutionsPerIteration)
+                best_time_per_hints.append(timePerHint)
         else:
-            print("ALGORITHM_CHOICE が 1 以外は未対応です。")
-            break
+            print("唯一解の生成に失敗しました。")
 
     # 最終的な結果を出力
     print("\n=== 最終結果 ===")

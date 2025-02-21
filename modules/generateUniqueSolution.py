@@ -3,6 +3,8 @@ import gurobipy as gp
 from gurobipy import GRB
 from utility.printBoard import printBoard
 
+# 解盤面の保存なし
+
 def generateUniqueSolution(board, MAX_SOLUTIONS, LIMIT_TIME):
     start_time = time.time()
     timePerHint = []  # ヒントごとの生成時間を記録するリスト
