@@ -48,7 +48,7 @@ def generate_sudoku(board):
 
     # 最大解数とターゲットヒント数を設定
     if size == 9:
-        MAX_SOLUTIONS = 100
+        MAX_SOLUTIONS = 10
         TARGET_HINT_COUNT = 16
     elif size == 16:
         MAX_SOLUTIONS = 300
@@ -129,13 +129,39 @@ def generate_sudoku(board):
     print("生成終わり")
     endTime = time.time()
 
+    generationTime = endTime - startTime
+    print(f"生成時間: {generationTime:.2f}秒")
+
     if uniqueSolution:
+        print("\n******************************************")
+        print("唯一解を持つ問題例(数字):")
+        print("******************************************")
+        printBoard(problemExample)
+
+        print("\n******************************************")
+        print("その問題例の解答(数字):")
+        print("******************************************")
+        printBoard(uniqueSolution)
+
+        # 数値から文字に変換して表示
+        print("\n******************************************")
+        print("文字に変換された問題例(文字):")
+        print("******************************************")
+        problemBoard = converter.convertBack(problemExample)
+        printBoard(problemBoard)
+
+        print("\n******************************************")
+        print("文字に変換された解答(文字):")
+        print("******************************************")
+        solutionBoard = converter.convertBack(uniqueSolution)
+        printBoard(solutionBoard)
+
+
         # 結果をJSONで返す
         result = {
-            "problemExample": problemExample,
-            "uniqueSolution": uniqueSolution,
-            "generationTime": round(endTime - startTime, 2),
-            "addedHintInformation": addedHintInformation,
+            "problemBoard": problemBoard,
+            "solutionBoard": solutionBoard,
+            "generationTime": round(endTime - startTime, 2)
         }
         return jsonify(result)
 
