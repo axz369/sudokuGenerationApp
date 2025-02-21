@@ -1,5 +1,5 @@
 import random
-from utility.printBoard import printBoard
+from models.printBoard import printBoard
 
 
 class UnifiedNumberOfHints:

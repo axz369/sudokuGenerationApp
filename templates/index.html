@@ -3,15 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数独ソルバー</title>
+    <title>9x9 Sudoku Input</title>
 </head>
 <body>
-    <h1>数独ソルバー</h1>
-    <p>盤面サイズを選択してください：</p>
-    <button onclick="location.href='/input9'">9x9</button>
-    <button onclick="location.href='/sudoku/16x16'">16x16</button>
-    <button onclick="location.href='/sudoku/25x25'">25x25</button>
+    <h1>9x9 Sudoku Input</h1>
+    <form id="sudoku-form">
+        <table border="1">
+            <!-- 9x9のセルを動的に作成 -->
+            {% for row in range(9) %}
+                <tr>
+                    {% for col in range(9) %}
+                        <td><input type="text" id="cell-{{ row }}-{{ col }}" size="2"></td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+        <button type="submit">Submit</button>
+    </form>
 
-    <script src="main.js"></script>
+    <script>
+        document.getElementById('sudoku-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let board = [];
+            for (let row = 0; row < 9; row++) {
+                let rowData = [];
+                for (let col = 0; col < 9; col++) {
+                    let cellValue = document.getElementById(`cell-${row}-${col}`).value;
+                    rowData.push(cellValue);
+                }
+                board.push(rowData);
+            }
+
+            // バックエンドにデータを送信
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ board: board })
+            })
+            .then(response => response.json())
+            .then(data => alert('データが送信されました！'))
+            .catch(error => console.error('エラー:', error));
+        });
+    </script>
 </body>
 </html>
