@@ -51,7 +51,7 @@ def generate_sudoku(board):
         MAX_SOLUTIONS = 100
         TARGET_HINT_COUNT = 16
     elif size == 16:
-        MAX_SOLUTIONS = 300
+        MAX_SOLUTIONS = 10
         TARGET_HINT_COUNT = 51
     elif size == 25:
         MAX_SOLUTIONS = 20

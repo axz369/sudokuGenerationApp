@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9x9 Sudoku Input</title>
+    <title>{{ size }}x{{ size }} Sudoku Input</title>
     <style>
         /* 既存のスタイル */
         .sudoku-grid {
@@ -73,12 +73,12 @@
 </head>
 <body>
     <button onclick="window.location.href='/'">戻る</button>
-    <h1>9x9 Sudoku Input</h1>
+    <h1>{{ size }}x{{ size }}  Sudoku Input</h1>
     <form id="sudoku-form">
         <table border="1" class="sudoku-grid">
-            {% for row in range(9) %}
+            {% for row in range(size) %}
                 <tr>
-                    {% for col in range(9) %}
+                    {% for col in range(size) %}
                         <td><input type="text" id="cell-{{ row }}-{{ col }}" maxlength="1"></td>
                     {% endfor %}
                 </tr>
@@ -96,6 +96,10 @@
     <div id="result"></div>
 
     <script>
+        // クエリパラメータから `size` を取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const size = urlParams.get('size');  // "size" の値を取得
+
         document.getElementById('sudoku-form').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -104,9 +108,9 @@
             loadingContainer.style.display = 'flex';
 
             let board = [];
-            for (let row = 0; row < 9; row++) {
+            for (let row = 0; row < size; row++) {
                 let rowData = [];
-                for (let col = 0; col < 9; col++) {
+                for (let col = 0; col < size; col++) {
                     let cellValue = document.getElementById(`cell-${row}-${col}`).value.trim();
                     rowData.push(cellValue ? cellValue : "");
                 }
@@ -120,7 +124,7 @@
                 },
                 body: JSON.stringify({
                     input: {
-                        size: 9,
+                        size: size,
                         board: board
                     }
                 })
@@ -134,9 +138,9 @@
                     function createSudokuTable(board, title, hiddenZeros = false) {
                         let html = `<h2>${title}</h2>`;
                         html += '<table class="sudoku-grid">';
-                        for (let i = 0; i < 9; i++) {
+                        for (let i = 0; i < size; i++) {
                             html += '<tr>';
-                            for (let j = 0; j < 9; j++) {
+                            for (let j = 0; j < size; j++) {
                                 const displayValue = (hiddenZeros && board[i][j] === '0') ? '' : board[i][j];
                                 html += `<td>${displayValue}</td>`;
                             }
