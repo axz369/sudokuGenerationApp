@@ -3,14 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>盤面サイズを選択</title>
+    <title>Sudoku Input</title>
+    <style>
+        /* 既存のスタイル */
+        .sudoku-grid {
+            border-collapse: collapse;
+            margin: 20px auto; /* 横方向中央に配置 */
+        }
+        .sudoku-grid td {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+        .sudoku-grid tr:nth-child(3n) td {
+            border-bottom: 2px solid #000;
+        }
+        .sudoku-grid td:nth-child(3n) {
+            border-right: 2px solid #000;
+        }
+        .sudoku-grid tr:first-child td {
+            border-top: 2px solid #000;
+        }
+        .sudoku-grid td:first-child {
+            border-left: 2px solid #000;
+        }
+        input[type="text"] {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+        }
+
+        /* ローディング表示のスタイル */
+        .loading-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        .loading-text {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* タブスタイル */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #ccc;
+            margin: 0 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .active-tab {
+            background-color: #3498db;
+            color: white;
+        }
+        /* 背景色の変更（今回は固定） */
+        .tab-9x9, .tab-16x16, .tab-25x25 {
+            background-color: #f9f9f9;
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
 </head>
-<body>
-    <h1>盤面サイズを選択</h1>
-    <form action="/generate" method="get">
-        <button type="submit" name="size" value="9">9x9</button>
-        <button type="submit" name="size" value="16">16x16</button>
-        <button type="submit" name="size" value="25">25x25</button>
+<body class="tab-9x9">
+    <h1 id="title" style="text-align: center;">数独の問題例生成</h1>
+    <div class="tab-container">
+        <div class="tab active-tab" data-size="9" data-color="tab-9x9">9x9</div>
+        <div class="tab" data-size="16" data-color="tab-16x16">16x16</div>
+        <div class="tab" data-size="25" data-color="tab-25x25">25x25</div>
+    </div>
+
+    
+    <form id="sudoku-form" style="text-align: center;">
+        <table border="1" class="sudoku-grid" id="sudoku-grid"></table>
+        <button type="submit" style="display: block; margin: 0 auto;">Submit</button>
     </form>
+
+    <!-- ローディング表示 -->
+    <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">問題を生成しています</div>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        // タブの切り替え処理
+        const tabs = document.querySelectorAll('.tab');
+        const title = document.getElementById('title');
+        const sudokuGrid = document.getElementById('sudoku-grid');
+        const body = document.body;
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // アクティブなタブの切り替え
+                document.querySelector('.active-tab').classList.remove('active-tab');
+                tab.classList.add('active-tab');
+
+                // 背景色の切り替え（今回は背景色は固定なのでclassは変更しない）
+                body.className = tab.getAttribute('data-color');
+
+                // サイズの切り替え
+                const size = tab.getAttribute('data-size');
+
+                // グリッドの再描画
+                renderSudokuGrid(size);
+            });
+        });
+
+        // Sudokuグリッドの描画関数
+        function renderSudokuGrid(size) {
+            sudokuGrid.innerHTML = '';
+            for (let row = 0; row < size; row++) {
+                let tr = document.createElement('tr');
+                for (let col = 0; col < size; col++) {
+                    let td = document.createElement('td');
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `cell-${row}-${col}`;
+                    input.maxLength = '1';
+                    td.appendChild(input);
+                    tr.appendChild(td);
+                }
+                sudokuGrid.appendChild(tr);
+            }
+        }
+
+        // 初期表示 (9x9)
+        renderSudokuGrid(9);
+
+        // フォーム送信時の処理
+        document.getElementById('sudoku-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // ローディング表示を表示
+            const loadingContainer = document.querySelector('.loading-container');
+            loadingContainer.style.display = 'flex';
+
+            const size = document.querySelector('.active-tab').getAttribute('data-size');
+            let board = [];
+            for (let row = 0; row < size; row++) {
+                let rowData = [];
+                for (let col = 0; col < size; col++) {
+                    let cellValue = document.getElementById(`cell-${row}-${col}`).value.trim();
+                    rowData.push(cellValue ? cellValue : "");
+                }
+                board.push(rowData);
+            }
+
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    input: {
+                        size: size,
+                        board: board
+                    }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // ローディング表示を非表示
+                loadingContainer.style.display = 'none';
+
+                if (data.problemBoard && data.solutionBoard && data.generationTime) {
+                    function createSudokuTable(board, title, hiddenZeros = false) {
+                        let html = `<h2 style="text-align: center;">${title}</h2>`;
+                        html += '<table class="sudoku-grid">';
+                        for (let i = 0; i < size; i++) {
+                            html += '<tr>';
+                            for (let j = 0; j < size; j++) {
+                                const displayValue = (hiddenZeros && board[i][j] === '0') ? '' : board[i][j];
+                                html += `<td>${displayValue}</td>`;
+                            }
+                            html += '</tr>';
+                        }
+                        html += '</table>';
+                        return html;
+                    }
+
+                    document.getElementById('result').innerHTML = 
+                        createSudokuTable(data.problemBoard, '問題盤面', true) +
+                        createSudokuTable(data.solutionBoard, '解盤面') +
+                        `<h2 style="text-align: center;">生成時間</h2><p style="text-align: center;">${data.generationTime}秒</p>`;
+                } else {
+                    document.getElementById('result').innerText = 'エラー: 予期しないレスポンス';
+                }
+            })
+            .catch(error => {
+                // エラー時もローディング表示を非表示
+                loadingContainer.style.display = 'none';
+                document.getElementById('result').innerText = 'エラー: ' + error.message;
+                console.error('エラー:', error);
+            });
+        });
+    </script>
 </body>
 </html>
