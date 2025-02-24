@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ size }}x{{ size }} Sudoku Input</title>
+    <title>Sudoku Input</title>
     <style>
         /* 既存のスタイル */
         .sudoku-grid {
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 20px auto; /* 横方向中央に配置 */
         }
         .sudoku-grid td {
             width: 40px;
@@ -48,7 +48,6 @@
             align-items: center;
             flex-direction: column;
         }
-
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -58,33 +57,57 @@
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
         }
-
         .loading-text {
             color: white;
             font-size: 20px;
             font-weight: bold;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* タブスタイル */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #ccc;
+            margin: 0 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .active-tab {
+            background-color: #3498db;
+            color: white;
+        }
+        /* 背景色の変更（今回は固定） */
+        .tab-9x9, .tab-16x16, .tab-25x25 {
+            background-color: #f9f9f9;
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: center;
+        }
     </style>
 </head>
-<body>
-    <button onclick="window.location.href='/'">戻る</button>
-    <h1>{{ size }}x{{ size }}  Sudoku Input</h1>
-    <form id="sudoku-form">
-        <table border="1" class="sudoku-grid">
-            {% for row in range(size) %}
-                <tr>
-                    {% for col in range(size) %}
-                        <td><input type="text" id="cell-{{ row }}-{{ col }}" maxlength="1"></td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </table>
-        <button type="submit">Submit</button>
+<body class="tab-9x9">
+    <h1 id="title" style="text-align: center;">数独の問題例生成</h1>
+    <div class="tab-container">
+        <div class="tab active-tab" data-size="9" data-color="tab-9x9">9x9</div>
+        <div class="tab" data-size="16" data-color="tab-16x16">16x16</div>
+        <div class="tab" data-size="25" data-color="tab-25x25">25x25</div>
+    </div>
+
+    
+    <form id="sudoku-form" style="text-align: center;">
+        <table border="1" class="sudoku-grid" id="sudoku-grid"></table>
+        <button type="submit" style="display: block; margin: 0 auto;">Submit</button>
     </form>
 
     <!-- ローディング表示 -->
@@ -96,10 +119,51 @@
     <div id="result"></div>
 
     <script>
-        // クエリパラメータから `size` を取得
-        const urlParams = new URLSearchParams(window.location.search);
-        const size = urlParams.get('size');  // "size" の値を取得
+        // タブの切り替え処理
+        const tabs = document.querySelectorAll('.tab');
+        const title = document.getElementById('title');
+        const sudokuGrid = document.getElementById('sudoku-grid');
+        const body = document.body;
 
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // アクティブなタブの切り替え
+                document.querySelector('.active-tab').classList.remove('active-tab');
+                tab.classList.add('active-tab');
+
+                // 背景色の切り替え（今回は背景色は固定なのでclassは変更しない）
+                body.className = tab.getAttribute('data-color');
+
+                // サイズの切り替え
+                const size = tab.getAttribute('data-size');
+
+                // グリッドの再描画
+                renderSudokuGrid(size);
+            });
+        });
+
+        // Sudokuグリッドの描画関数
+        function renderSudokuGrid(size) {
+            sudokuGrid.innerHTML = '';
+            for (let row = 0; row < size; row++) {
+                let tr = document.createElement('tr');
+                for (let col = 0; col < size; col++) {
+                    let td = document.createElement('td');
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `cell-${row}-${col}`;
+                    input.maxLength = '1';
+                    td.appendChild(input);
+                    tr.appendChild(td);
+                }
+                sudokuGrid.appendChild(tr);
+            }
+        }
+
+        // 初期表示 (9x9)
+        renderSudokuGrid(9);
+
+        // フォーム送信時の処理
         document.getElementById('sudoku-form').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -107,6 +171,7 @@
             const loadingContainer = document.querySelector('.loading-container');
             loadingContainer.style.display = 'flex';
 
+            const size = document.querySelector('.active-tab').getAttribute('data-size');
             let board = [];
             for (let row = 0; row < size; row++) {
                 let rowData = [];
@@ -136,7 +201,7 @@
 
                 if (data.problemBoard && data.solutionBoard && data.generationTime) {
                     function createSudokuTable(board, title, hiddenZeros = false) {
-                        let html = `<h2>${title}</h2>`;
+                        let html = `<h2 style="text-align: center;">${title}</h2>`;
                         html += '<table class="sudoku-grid">';
                         for (let i = 0; i < size; i++) {
                             html += '<tr>';
@@ -153,7 +218,7 @@
                     document.getElementById('result').innerHTML = 
                         createSudokuTable(data.problemBoard, '問題盤面', true) +
                         createSudokuTable(data.solutionBoard, '解盤面') +
-                        `<h2>生成時間</h2><p>${data.generationTime}秒</p>`;
+                        `<h2 style="text-align: center;">生成時間</h2><p style="text-align: center;">${data.generationTime}秒</p>`;
                 } else {
                     document.getElementById('result').innerText = 'エラー: 予期しないレスポンス';
                 }
