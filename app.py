@@ -11,7 +11,7 @@ def home():
 
 @app.route('/generate', methods=['GET'])
 def generate():
-    size = request.args.get('size', default='9') 
+    size = request.args.get('size', default='9', type=int) 
     return render_template('generate.html', size=size)
 
 @app.route('/submit', methods=['POST'])
