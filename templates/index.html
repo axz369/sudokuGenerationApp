@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sudoku Input</title>
     <style>
-        /* 既存のスタイル */
+        /* 基本スタイル */
         .sudoku-grid {
             border-collapse: collapse;
             margin: 20px auto; /* 横方向中央に配置 */
@@ -16,18 +16,21 @@
             text-align: center;
             border: 1px solid #ccc;
         }
-        .sudoku-grid tr:nth-child(3n) td {
-            border-bottom: 2px solid #000;
-        }
-        .sudoku-grid td:nth-child(3n) {
-            border-right: 2px solid #000;
-        }
+        
+        /* 基本境界線 - サイズ別の強調線はJSで動的に適用 */
         .sudoku-grid tr:first-child td {
             border-top: 2px solid #000;
         }
         .sudoku-grid td:first-child {
             border-left: 2px solid #000;
         }
+        .sudoku-grid tr:last-child td {
+            border-bottom: 2px solid #000;
+        }
+        .sudoku-grid td:last-child {
+            border-right: 2px solid #000;
+        }
+        
         input[type="text"] {
             width: 30px;
             height: 30px;
@@ -99,9 +102,9 @@
 <body class="tab-9x9">
     <h1 id="title" style="text-align: center;">数独の問題例生成</h1>
     <div class="tab-container">
-        <div class="tab active-tab" data-size="9" data-color="tab-9x9">9x9</div>
-        <div class="tab" data-size="16" data-color="tab-16x16">16x16</div>
-        <div class="tab" data-size="25" data-color="tab-25x25">25x25</div>
+        <div class="tab active-tab" data-size="9" data-color="tab-9x9" data-subgrid="3">9x9</div>
+        <div class="tab" data-size="16" data-color="tab-16x16" data-subgrid="4">16x16</div>
+        <div class="tab" data-size="25" data-color="tab-25x25" data-subgrid="5">25x25</div>
     </div>
 
     
@@ -119,6 +122,9 @@
     <div id="result"></div>
 
     <script>
+        // 現在のサブグリッドサイズ
+        let currentSubgridSize = 3;
+
         // タブの切り替え処理
         const tabs = document.querySelectorAll('.tab');
         const title = document.getElementById('title');
@@ -131,11 +137,12 @@
                 document.querySelector('.active-tab').classList.remove('active-tab');
                 tab.classList.add('active-tab');
 
-                // 背景色の切り替え（今回は背景色は固定なのでclassは変更しない）
+                // 背景色の切り替え
                 body.className = tab.getAttribute('data-color');
 
                 // サイズの切り替え
-                const size = tab.getAttribute('data-size');
+                const size = parseInt(tab.getAttribute('data-size'));
+                currentSubgridSize = parseInt(tab.getAttribute('data-subgrid'));
 
                 // グリッドの再描画
                 renderSudokuGrid(size);
@@ -145,6 +152,8 @@
         // Sudokuグリッドの描画関数
         function renderSudokuGrid(size) {
             sudokuGrid.innerHTML = '';
+            const subgridSize = currentSubgridSize;
+            
             for (let row = 0; row < size; row++) {
                 let tr = document.createElement('tr');
                 for (let col = 0; col < size; col++) {
@@ -152,7 +161,16 @@
                     let input = document.createElement('input');
                     input.type = 'text';
                     input.id = `cell-${row}-${col}`;
-                    input.maxLength = '1';
+                    input.maxLength = size <= 9 ? '1' : '2'; // 16x16と25x25の場合は2桁必要
+                    
+                    // サブグリッド境界線の設定
+                    if ((row + 1) % subgridSize === 0 && row < size - 1) {
+                        td.style.borderBottom = '2px solid #000';
+                    }
+                    if ((col + 1) % subgridSize === 0 && col < size - 1) {
+                        td.style.borderRight = '2px solid #000';
+                    }
+                    
                     td.appendChild(input);
                     tr.appendChild(td);
                 }
@@ -171,7 +189,9 @@
             const loadingContainer = document.querySelector('.loading-container');
             loadingContainer.style.display = 'flex';
 
-            const size = document.querySelector('.active-tab').getAttribute('data-size');
+            const size = parseInt(document.querySelector('.active-tab').getAttribute('data-size'));
+            const subgridSize = parseInt(document.querySelector('.active-tab').getAttribute('data-subgrid'));
+            
             let board = [];
             for (let row = 0; row < size; row++) {
                 let rowData = [];
@@ -207,7 +227,17 @@
                             html += '<tr>';
                             for (let j = 0; j < size; j++) {
                                 const displayValue = (hiddenZeros && board[i][j] === '0') ? '' : board[i][j];
-                                html += `<td>${displayValue}</td>`;
+                                
+                                // 境界線のスタイル設定
+                                let tdStyle = '';
+                                if ((i + 1) % subgridSize === 0 && i < size - 1) {
+                                    tdStyle += 'border-bottom: 2px solid #000;';
+                                }
+                                if ((j + 1) % subgridSize === 0 && j < size - 1) {
+                                    tdStyle += 'border-right: 2px solid #000;';
+                                }
+                                
+                                html += `<td style="${tdStyle}">${displayValue}</td>`;
                             }
                             html += '</tr>';
                         }
