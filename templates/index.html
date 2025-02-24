@@ -146,8 +146,8 @@
                     }
 
                     document.getElementById('result').innerHTML = 
-                        createSudokuTable(data.problemBoard, '問題ボード', true) +
-                        createSudokuTable(data.solutionBoard, '解答ボード') +
+                        createSudokuTable(data.problemBoard, '問題盤面', true) +
+                        createSudokuTable(data.solutionBoard, '解盤面') +
                         `<h2>生成時間</h2><p>${data.generationTime}秒</p>`;
                 } else {
                     document.getElementById('result').innerText = 'エラー: 予期しないレスポンス';
