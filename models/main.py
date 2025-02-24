@@ -161,7 +161,8 @@ def generate_sudoku(board):
         result = {
             "problemBoard": problemBoard,
             "solutionBoard": solutionBoard,
-            "generationTime": round(endTime - startTime, 2)
+            "generationTime": round(endTime - startTime, 2),
+            "size" : size
         }
         return jsonify(result)
 

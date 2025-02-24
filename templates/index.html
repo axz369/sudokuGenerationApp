@@ -4,16 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>9x9 Sudoku Input</title>
+    <style>
+        .sudoku-grid {
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .sudoku-grid td {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+        /* 3×3のブロックを強調 */
+        .sudoku-grid tr:nth-child(3n) td {
+            border-bottom: 2px solid #000;
+        }
+        .sudoku-grid td:nth-child(3n) {
+            border-right: 2px solid #000;
+        }
+        .sudoku-grid tr:first-child td {
+            border-top: 2px solid #000;
+        }
+        .sudoku-grid td:first-child {
+            border-left: 2px solid #000;
+        }
+        input[type="text"] {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <h1>9x9 Sudoku Input</h1>
     <form id="sudoku-form">
-        <table border="1">
-            <!-- 9x9のセルを動的に作成 -->
+        <table border="1" class="sudoku-grid">
             {% for row in range(9) %}
                 <tr>
                     {% for col in range(9) %}
-                        <td><input type="text" id="cell-{{ row }}-{{ col }}" size="3" maxlength="1"></td>
+                        <td><input type="text" id="cell-{{ row }}-{{ col }}" maxlength="1"></td>
                     {% endfor %}
                 </tr>
             {% endfor %}
@@ -32,12 +61,11 @@
                 let rowData = [];
                 for (let col = 0; col < 9; col++) {
                     let cellValue = document.getElementById(`cell-${row}-${col}`).value.trim();
-                    rowData.push(cellValue ? cellValue : "");  // 空文字も許容
+                    rowData.push(cellValue ? cellValue : "");
                 }
                 board.push(rowData);
             }
 
-            // バックエンドにデータを送信
             fetch('/submit', {
                 method: 'POST',
                 headers: {
@@ -52,16 +80,29 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.problemBoard && data.solutionBoard && data.generationTime !== undefined) {
-                    // 解決された数独を表示
-                    document.getElementById('result').innerHTML = `
-                        <h2>問題ボード</h2>
-                        <pre>${JSON.stringify(data.problemBoard, null, 2)}</pre>
-                        <h2>解決されたボード</h2>
-                        <pre>${JSON.stringify(data.solutionBoard, null, 2)}</pre>
-                        <h2>生成時間</h2>
-                        <p>${data.generationTime}秒</p>
-                    `;
+                if (data.problemBoard && data.solutionBoard && data.generationTime) {
+                    // 問題ボードと解答ボードを表形式で表示する関数
+                    function createSudokuTable(board, title, hiddenZeros = false) {
+                        let html = `<h2>${title}</h2>`;
+                        html += '<table class="sudoku-grid">';
+                        for (let i = 0; i < 9; i++) {
+                            html += '<tr>';
+                            for (let j = 0; j < 9; j++) {
+                                // hiddenZerosがtrueで値が0の場合は空文字を表示
+                                const displayValue = (hiddenZeros && board[i][j] === '0') ? '' : board[i][j];
+                                html += `<td>${displayValue}</td>`;
+                            }
+                            html += '</tr>';
+                        }
+                        html += '</table>';
+                        return html;
+                    }
+
+                    // 結果を表示（問題ボードは0を非表示に）
+                    document.getElementById('result').innerHTML = 
+                        createSudokuTable(data.problemBoard, '問題ボード', true) +
+                        createSudokuTable(data.solutionBoard, '解答ボード') +
+                        `<h2>生成時間</h2><p>${data.generationTime}秒</p>`;
                 } else {
                     document.getElementById('result').innerText = 'エラー: 予期しないレスポンス';
                 }

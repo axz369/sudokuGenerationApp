@@ -35,6 +35,7 @@ def submit_sudoku():
         problem_board = result_dict['problemBoard']    # 生成された問題盤面
         solution_board = result_dict['solutionBoard']  # 解答盤面
         generation_time = result_dict['generationTime'] # 生成時間
+        size = result_dict['size']
         
     else:
         return jsonify({"error": "Invalid response from solver"}), 500
@@ -43,7 +44,8 @@ def submit_sudoku():
     result_data = {
         "problemBoard": problem_board,    # 生成された問題盤面を使用
         "solutionBoard": solution_board,
-        "generationTime": generation_time
+        "generationTime": generation_time,
+        "size" : size
     }
 
     return jsonify(result_data)
