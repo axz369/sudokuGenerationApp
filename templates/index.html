@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>9x9 Sudoku Input</title>
     <style>
+        /* 既存のスタイル */
         .sudoku-grid {
             border-collapse: collapse;
             margin: 20px 0;
@@ -15,7 +16,6 @@
             text-align: center;
             border: 1px solid #ccc;
         }
-        /* 3×3のブロックを強調 */
         .sudoku-grid tr:nth-child(3n) td {
             border-bottom: 2px solid #000;
         }
@@ -32,6 +32,42 @@
             width: 30px;
             height: 30px;
             text-align: center;
+        }
+
+        /* ローディング表示のスタイル */
+        .loading-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -50,11 +86,21 @@
         <button type="submit">Submit</button>
     </form>
 
+    <!-- ローディング表示 -->
+    <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">問題を生成しています</div>
+    </div>
+
     <div id="result"></div>
 
     <script>
         document.getElementById('sudoku-form').addEventListener('submit', function(event) {
             event.preventDefault();
+
+            // ローディング表示を表示
+            const loadingContainer = document.querySelector('.loading-container');
+            loadingContainer.style.display = 'flex';
 
             let board = [];
             for (let row = 0; row < 9; row++) {
@@ -80,15 +126,16 @@
             })
             .then(response => response.json())
             .then(data => {
+                // ローディング表示を非表示
+                loadingContainer.style.display = 'none';
+
                 if (data.problemBoard && data.solutionBoard && data.generationTime) {
-                    // 問題ボードと解答ボードを表形式で表示する関数
                     function createSudokuTable(board, title, hiddenZeros = false) {
                         let html = `<h2>${title}</h2>`;
                         html += '<table class="sudoku-grid">';
                         for (let i = 0; i < 9; i++) {
                             html += '<tr>';
                             for (let j = 0; j < 9; j++) {
-                                // hiddenZerosがtrueで値が0の場合は空文字を表示
                                 const displayValue = (hiddenZeros && board[i][j] === '0') ? '' : board[i][j];
                                 html += `<td>${displayValue}</td>`;
                             }
@@ -98,7 +145,6 @@
                         return html;
                     }
 
-                    // 結果を表示（問題ボードは0を非表示に）
                     document.getElementById('result').innerHTML = 
                         createSudokuTable(data.problemBoard, '問題ボード', true) +
                         createSudokuTable(data.solutionBoard, '解答ボード') +
@@ -108,6 +154,8 @@
                 }
             })
             .catch(error => {
+                // エラー時もローディング表示を非表示
+                loadingContainer.style.display = 'none';
                 document.getElementById('result').innerText = 'エラー: ' + error.message;
                 console.error('エラー:', error);
             });
