@@ -9,6 +9,11 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
+@app.route('/generate', methods=['GET'])
+def generate():
+    size = request.args.get('size', default='9') 
+    return render_template('generate.html', size=size)
+
 @app.route('/submit', methods=['POST'])
 def submit_sudoku():
     data = request.get_json()
