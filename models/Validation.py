@@ -4,7 +4,8 @@ class Validation:
         self.board = board
         self.size = size
         self.subBlockSize = int(size ** 0.5)
-        self.MAX_RECURSION_DEPTH = 1000  # 再帰の最大深さを設定
+        self.MAX_RECURSION_DEPTH = 1000
+        self.error_messages = []  # エラーメッセージを保存するリスト
 
     def check(self):
         if not self.checkRows():
@@ -18,20 +19,21 @@ class Validation:
         return True
 
     def getCharFromNumber(self, number):
-        # 数字から対応する文字を取得する
         for char, num in self.charToNumberMap.items():
             if num == number:
                 return char
-        return str(number)  # 対応する文字が見つからない場合は数字をそのまま返す
+        return str(number)
 
     def checkRows(self):
-        for i, row in enumerate(self.board):  # enumerateを使って行インデックスと行を取得
+        for i, row in enumerate(self.board):
             values = []
             for j, val in enumerate(row):
                 if val != 0:
                     if val in values:
                         char_value = self.getCharFromNumber(val)
-                        print(f"Validation失敗 同じ行で重複 : {i+1}行  {j+1}列  に重複した値 '{char_value}' が存在します。")
+                        error_msg = f"Validation失敗 同じ行で重複 : {i+1}行  {j+1}列  に重複した値 '{char_value}' が存在します。"
+                        self.error_messages.append(error_msg)
+                        print(error_msg)  # ログのために残す
                         return False
                     values.append(val)
         return True
@@ -44,7 +46,9 @@ class Validation:
                 if val != 0:
                     if val in values:
                         char_value = self.getCharFromNumber(val)
-                        print(f"Validation失敗 同じ列で重複 : 列 {col+1} 行 {row+1} に重複した値 '{char_value}' が存在します。")
+                        error_msg = f"Validation失敗 同じ列で重複 : 列 {col+1} 行 {row+1} に重複した値 '{char_value}' が存在します。"
+                        self.error_messages.append(error_msg)
+                        print(error_msg)
                         return False
                     values.append(val)
         return True
@@ -59,13 +63,20 @@ class Validation:
                         if value != 0:
                             if value in values:
                                 char_value = self.getCharFromNumber(value)
-                                print(f"Validation失敗 同じブロックで重複 : ブロック ({block_row+1}, {block_col+1}) 内に重複した値 '{char_value}' が存在します。")
+                                error_msg = f"Validation失敗 同じブロックで重複 : ブロック ({block_row+1}, {block_col+1}) 内に重複した値 '{char_value}' が存在します。"
+                                self.error_messages.append(error_msg)
+                                print(error_msg)
                                 return False
                             values.append(value)
         return True
 
     def checkCharCount(self):
         if len(self.charToNumberMap) > self.size:
-            print(f"Validation失敗 : 入力された盤面の文字の種類数 {len(self.charToNumberMap)} が最大値 {self.size} を超えています。")
+            error_msg = f"Validation失敗 : 入力された盤面の文字の種類数 {len(self.charToNumberMap)} が最大値 {self.size} を超えています。"
+            self.error_messages.append(error_msg)
+            print(error_msg)
             return False
         return True
+
+    def getErrorMessages(self):
+        return self.error_messages
