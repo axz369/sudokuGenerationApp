@@ -134,9 +134,31 @@
         margin-top: 20px;
         text-align: center;
       }
+      
+      /* 利用方法ボタンのスタイル */
+      .guide-button {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 8px 15px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .guide-button:hover {
+        background-color: #45a049;
+      }
     </style>
   </head>
   <body class="tab-9x9">
+    <!-- 利用方法ボタン -->
+    <a href="{{ url_for('guide') }}" class="guide-button">利用方法</a>
+
+    
     <h1 id="title" style="text-align: center">数独の問題例生成</h1>
     <div class="tab-container">
       <div
@@ -461,7 +483,7 @@
                   `<h2 style="text-align: center;">生成時間</h2><p style="text-align: center;">${data.generationTime}秒</p>`;
               } else {
                 document.getElementById("result").innerHTML =
-                  '<div class="error-message">エラー: 不正な入力です．解盤面を生成できない入力の可能性があります．</div>';
+                  '<div class="error-message">不正な入力:解盤面を生成できない入力の可能性があります</div>';
               }
             })
             .catch((error) => {

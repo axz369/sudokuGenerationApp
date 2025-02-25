@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>利用方法</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            text-align: center;
+        }
+        div, section {
+            margin: 0 auto;
+        }
+        img {
+            display: block;
+            margin: 0 auto;
+            width: 80%; /* 画像の横幅を80%に設定 */
+            max-width: 300px; /* 最大幅を300pxに制限 */
+            height: auto; /* アスペクト比を維持 */
+        }
+        /* ボタンを左上に配置 */
+        .top-left-button {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          padding: 8px 15px;
+          background-color: #ff6b2c;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          font-size: 14px;
+          cursor: pointer;
+          text-decoration: none;
+        }
+        .top-left-button:hover {
+          background-color: #ff5120;
+        }
+        /* sectionとdivの上下にスペースを追加 */
+        section, div {
+            margin-top: 30px;
+            margin-bottom: 100px;
+        }
+
+        @media screen and (min-width: 1024px) {
+            /* 横並びにして左右の間隔を狭める */
+            .flex-container {
+                display: flex;
+                justify-content: space-between; /* 左右均等のスペース */
+                align-items: flex-start;
+                margin: 0 auto;
+                width: 90%;
+                max-width: 1200px;
+            }
+
+            .flex-item {
+                width: 30%; /* 3つの利用方法を均等に横並びに配置 */
+            }
+
+            .rule-container {
+                display: flex;
+                justify-content: space-between; /* 左右均等のスペース */
+                width: 90%;
+                margin: 0 auto;
+                max-width: 1200px;
+            }
+
+            .rule-item {
+                width: 30%; /* 3つのルールを均等に横並びに配置 */
+            }
+
+            .large-image {
+                width: 80%; /* 生成できない理由の画像を大きめに表示 */
+                max-width: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 左上に配置されるボタン -->
+    <button onclick="location.href='/'" class="top-left-button">ホームに戻る</button>
+
+    <header>
+        <h1>利用方法</h1>
+    </header>
+    <main>
+        <div class="flex-container">
+          <section class="flex-item">
+            <p>①任意の文字列を入力します</p>
+            <img src="/static/input.png" alt="利用方法の説明画像">
+          </section>
+          <section class="flex-item">
+            <p>②生成ボタンを押して生成を開始します</p>
+            <img src="/static/generate.png" alt="利用方法の説明画像">
+          </section>
+          <section class="flex-item">
+            <p>③生成された数独の盤面が表示されます</p>
+            <img src="/static/output.png" alt="生成された数独の盤面画像">
+          </section>
+        </div>
+
+        <div>
+          <h1>数独のルール</h1>
+          <div class="rule-container">
+            <div class="rule-item">
+              <p>・同じ行内で値が重複しない</p>
+              <img src="/static/rowConstraints.png" alt="行の制約説明画像">
+            </div>
+            <div class="rule-item">
+              <p>・同じ列内で値が重複しない</p>
+              <img src="/static/columnConstraints.png" alt="列の制約説明画像">
+            </div>
+            <div class="rule-item">
+              <p>・同じサブブロック内で値が重複しない</p>
+              <img src="/static/blockConstraints.png" alt="ブロックの制約説明画像">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h1>エラーが起こったら</h1>
+          <section>
+            <p>該当箇所を確認して入力しなおしてください</p>
+            <img src="/static/duplication.png" alt="重複エラー説明画像">
+          </section>
+          <section>
+            <p>一見正しく見えても盤面を生成できない場合があります</p>
+            <p><img src="/static/invalidInput.png" alt="無効な入力例画像"></p>
+            <p>生成ができない理由</p>
+            <p><img class="large-image" src="/static/explanation.png" alt="生成できない理由説明画像"></p>
+          </section>
+        </div>
+    </main>
+    <footer>
+    </footer>
+</body>
+</html>

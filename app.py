@@ -9,6 +9,10 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
+@app.route('/guide')
+def guide():
+    return render_template('guide.html')
+
 @app.route('/submit', methods=['POST'])
 def submit_sudoku():
     data = request.get_json()
