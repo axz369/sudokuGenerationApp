@@ -71,7 +71,11 @@ def generate_sudoku(board):
     validator = Validation(
         dataConvertedToNumbers['charToNumberMap'], dataConvertedToNumbers['boardConvertedToNumber'], size)
     if not validator.check():
-        return jsonify({"error": "バリデーション失敗"}), 400
+        print("ggggggggggggggggggggggggggggggggggg")
+        error_messages = validator.getErrorMessages()
+        print(error_messages)
+        return error_messages, 200
+        #return jsonify({"error": "バリデーション失敗"}), 400
 
     # generateSolutionBoard関数を使用して解盤面Aを取得
     boardA = [row[:]
