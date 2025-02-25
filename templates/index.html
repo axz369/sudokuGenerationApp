@@ -42,6 +42,16 @@
         border: 2px solid red !important;
       }
 
+      /* エラーメッセージのスタイル改善 */
+      .error-message {
+        background-color: #ffebee; /* 薄い赤色の背景 */
+        border: 2px solid #f44336; /* 赤い枠線 */
+        border-radius: 8px; /* 角丸 */
+        padding: 10px 15px;
+        margin: 5px 0;
+        color: #d32f2f;
+      }
+
       /* ローディング表示のスタイル */
       .loading-container {
         display: none;
@@ -349,10 +359,10 @@
             }
         }
 
-        // エラーメッセージの表示
+        // エラーメッセージの表示（改良版）
         if (!isValid) {
             document.getElementById("result").innerHTML = messages
-            .map((msg) => `<p style="color: red;">${msg}</p>`)
+            .map((msg) => `<div class="error-message">${msg}</div>`)
             .join("");
         } else {
             document.getElementById("result").innerHTML = "";
@@ -450,15 +460,15 @@
                   createSudokuTable(data.solutionBoard, "解盤面") +
                   `<h2 style="text-align: center;">生成時間</h2><p style="text-align: center;">${data.generationTime}秒</p>`;
               } else {
-                document.getElementById("result").innerText =
-                  "エラー: 不正な入力です";
+                document.getElementById("result").innerHTML =
+                  '<div class="error-message">エラー: 不正な入力です．解盤面を生成できない入力の可能性があります．</div>';
               }
             })
             .catch((error) => {
               // エラー時もローディング表示を非表示
               loadingContainer.style.display = "none";
-              document.getElementById("result").innerText =
-                "エラー: " + error.message;
+              document.getElementById("result").innerHTML =
+                `<div class="error-message">エラー: ${error.message}</div>`;
               console.error("エラー:", error);
             });
         });

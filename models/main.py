@@ -71,7 +71,6 @@ def generate_sudoku(board):
     validator = Validation(
         dataConvertedToNumbers['charToNumberMap'], dataConvertedToNumbers['boardConvertedToNumber'], size)
     if not validator.check():
-        print("ggggggggggggggggggggggggggggggggggg")
         error_messages = validator.getErrorMessages()
         print(error_messages)
         return error_messages, 200
