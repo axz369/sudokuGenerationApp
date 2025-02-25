@@ -224,125 +224,142 @@
       function validateSudokuGrid(size, subgridSize) {
         // 以前のエラー表示をクリア
         for (let row = 0; row < size; row++) {
-          for (let col = 0; col < size; col++) {
+            for (let col = 0; col < size; col++) {
             document.getElementById(`cell-${row}-${col}`).classList.remove("error");
-          }
+            }
         }
 
         let isValid = true;
         let messages = [];
         let board = [];
 
-
         // 盤面の読み込み（大文字統一）
         for (let row = 0; row < size; row++) {
-          let rowData = [];
-          for (let col = 0; col < size; col++) {
+            let rowData = [];
+            for (let col = 0; col < size; col++) {
             let cell = document.getElementById(`cell-${row}-${col}`);
             let value = cell.value.trim().toUpperCase();
             cell.value = value; // 入力値を大文字に統一
             rowData.push(value);
-          }
-          board.push(rowData);
+            }
+            board.push(rowData);
         }
 
         // 許可されていない記号のチェック＆ユニーク記号のカウント
         let distinctSymbols = new Set();
         for (let row = 0; row < size; row++) {
-          for (let col = 0; col < size; col++) {
-            let cell = document.getElementById(`cell-${row}-${col}`);
+            for (let col = 0; col < size; col++) {
             let value = board[row][col];
-          }
+            if (value !== "") {
+                distinctSymbols.add(value);
+            }
+            }
         }
         distinctSymbols.delete(""); // 空文字は除外
 
         // 入力された記号の種類が盤面サイズを超えていないかチェック
         if (distinctSymbols.size > size) {
-          isValid = false;
-          messages.push(`入力された記号の種類が多すぎます（最大 ${size} 種類まで）`);
+            isValid = false;
+            messages.push(`入力された記号の種類が多すぎます（最大 ${size} 種類まで）`);
+            
+            // すべてのセルをハイライト表示する代わりに、最初に出現した各記号のみをハイライト
+            let symbolsFound = {};
+            for (let row = 0; row < size; row++) {
+            for (let col = 0; col < size; col++) {
+                let value = board[row][col];
+                if (value !== "") {
+                if (!symbolsFound[value]) {
+                    symbolsFound[value] = true;
+                } else if (Object.keys(symbolsFound).length > size) {
+                    // サイズを超えた記号をエラー表示
+                    document.getElementById(`cell-${row}-${col}`).classList.add("error");
+                }
+                }
+            }
+            }
         }
 
         // ① 行内の重複チェック
         for (let row = 0; row < size; row++) {
-          let seen = {};
-          for (let col = 0; col < size; col++) {
+            let seen = {};
+            for (let col = 0; col < size; col++) {
             let value = board[row][col];
             if (value === "") continue;
             if (seen[value]) {
-              isValid = false;
-              // 同じ行内のすべての重複セルにエラー表示
-              for (let c = 0; c < size; c++) {
+                isValid = false;
+                // 同じ行内のすべての重複セルにエラー表示
+                for (let c = 0; c < size; c++) {
                 if (board[row][c] === value) {
-                  document.getElementById(`cell-${row}-${c}`).classList.add("error");
+                    document.getElementById(`cell-${row}-${c}`).classList.add("error");
                 }
-              }
-              messages.push(`行 ${row+1} に値 '${value}' の重複があります`);
+                }
+                messages.push(`行 ${row+1} に値 '${value}' の重複があります`);
             } else {
-              seen[value] = true;
+                seen[value] = true;
             }
-          }
+            }
         }
 
         // ② 列内の重複チェック
         for (let col = 0; col < size; col++) {
-          let seen = {};
-          for (let row = 0; row < size; row++) {
+            let seen = {};
+            for (let row = 0; row < size; row++) {
             let value = board[row][col];
             if (value === "") continue;
             if (seen[value]) {
-              isValid = false;
-              for (let r = 0; r < size; r++) {
+                isValid = false;
+                for (let r = 0; r < size; r++) {
                 if (board[r][col] === value) {
-                  document.getElementById(`cell-${r}-${col}`).classList.add("error");
+                    document.getElementById(`cell-${r}-${col}`).classList.add("error");
                 }
-              }
-              messages.push(`列 ${col+1} に値 '${value}' の重複があります`);
+                }
+                messages.push(`列 ${col+1} に値 '${value}' の重複があります`);
             } else {
-              seen[value] = true;
+                seen[value] = true;
             }
-          }
+            }
         }
 
         // ③ サブブロック内の重複チェック
         for (let blockRow = 0; blockRow < size; blockRow += subgridSize) {
-          for (let blockCol = 0; blockCol < size; blockCol += subgridSize) {
+            for (let blockCol = 0; blockCol < size; blockCol += subgridSize) {
             let seen = {};
             for (let r = blockRow; r < blockRow + subgridSize; r++) {
-              for (let c = blockCol; c < blockCol + subgridSize; c++) {
+                for (let c = blockCol; c < blockCol + subgridSize; c++) {
                 let value = board[r][c];
                 if (value === "") continue;
                 if (seen[value]) {
-                  isValid = false;
-                  // サブブロック内のすべての重複セルにエラー表示
-                  for (let r2 = blockRow; r2 < blockRow + subgridSize; r2++) {
+                    isValid = false;
+                    // サブブロック内のすべての重複セルにエラー表示
+                    for (let r2 = blockRow; r2 < blockRow + subgridSize; r2++) {
                     for (let c2 = blockCol; c2 < blockCol + subgridSize; c2++) {
-                      if (board[r2][c2] === value) {
+                        if (board[r2][c2] === value) {
                         document.getElementById(`cell-${r2}-${c2}`).classList.add("error");
-                      }
+                        }
                     }
-                  }
-                  messages.push(
+                    }
+                    messages.push(
                     `サブブロック (${blockRow+1}～${blockRow+subgridSize}, ${blockCol+1}～${blockCol+subgridSize}) 内に値 '${value}' の重複があります`
-                  );
+                    );
                 } else {
-                  seen[value] = true;
+                    seen[value] = true;
                 }
-              }
+                }
             }
-          }
+            }
         }
 
         // エラーメッセージの表示
         if (!isValid) {
-          document.getElementById("result").innerHTML = messages
+            document.getElementById("result").innerHTML = messages
             .map((msg) => `<p style="color: red;">${msg}</p>`)
             .join("");
         } else {
-          document.getElementById("result").innerHTML = "";
+            document.getElementById("result").innerHTML = "";
         }
 
         return isValid;
-      }
+        }
 
       // ---------------------------
       // フォーム送信時の処理
@@ -434,7 +451,7 @@
                   `<h2 style="text-align: center;">生成時間</h2><p style="text-align: center;">${data.generationTime}秒</p>`;
               } else {
                 document.getElementById("result").innerText =
-                  "エラー: 不正な入力です．文字の種類数が行数より多くなっている．または解盤面を生成できない入力の可能性があります．";
+                  "エラー: 不正な入力です";
               }
             })
             .catch((error) => {
