@@ -218,6 +218,8 @@
     <script>
       // 現在のサブグリッドサイズ
       let currentSubgridSize = 3;
+      // 元の入力盤面を保存する変数
+      let originalBoard = null;
 
       // タブの切り替え処理
       const tabs = document.querySelectorAll(".tab");
@@ -453,6 +455,19 @@
           const loadingContainer = document.querySelector(".loading-container");
           loadingContainer.style.display = "flex";
 
+          // 元の入力盤面を保存
+          originalBoard = [];
+          for (let row = 0; row < size; row++) {
+            let rowData = [];
+            for (let col = 0; col < size; col++) {
+              let cellValue = document
+                .getElementById(`cell-${row}-${col}`)
+                .value.trim();
+              rowData.push(cellValue);
+            }
+            originalBoard.push(rowData);
+          }
+
           let board = [];
           for (let row = 0; row < size; row++) {
             let rowData = [];
@@ -474,7 +489,7 @@
               input: {
                 size: size,
                 board: board,
-                limit: limit,
+                limit: parseInt(document.getElementById("limit").value),
               },
             }),
           })
@@ -491,6 +506,10 @@
                 function createSudokuTable(board, title, hiddenZeros = false) {
                   let html = `<h2 style="text-align: center;">${title}</h2>`;
                   html += '<table class="sudoku-grid">';
+
+                  const size = board.length;
+                  const subgridSize = currentSubgridSize;
+  
                   for (let i = 0; i < size; i++) {
                     html += "<tr>";
                     for (let j = 0; j < size; j++) {
@@ -506,7 +525,13 @@
                         tdStyle += "border-right: 2px solid #000;";
                       }
 
-                      html += `<td style="${tdStyle}">${displayValue}</td>`;
+                      // 元の入力値かどうかを確認し、青文字で表示
+                      let cellStyle = "";
+                      if (originalBoard && originalBoard[i][j] !== "") {
+                        cellStyle = "color: blue; font-weight: bold;";
+                      }
+
+                      html += `<td style="${tdStyle}"><span style="${cellStyle}">${displayValue}</span></td>`;
                     }
                     html += "</tr>";
                   }
@@ -533,4 +558,3 @@
         });
     </script>
   </body>
-</html>
