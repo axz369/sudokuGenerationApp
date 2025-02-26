@@ -152,6 +152,25 @@
       .guide-button:hover {
         background-color: #45a049;
       }
+
+       /* 生成上限フォームのスタイル追加 */
+       .limit-form {
+        text-align: center;
+        margin: 15px auto;
+      }
+      
+      .limit-form label {
+        font-size: 18px;
+      }
+      
+      .limit-form input[type="number"] {
+        width: 60px;
+        height: 25px;
+        text-align: center;
+        margin: 0 10px;
+        padding: 2px 5px;
+      }
+
     </style>
   </head>
   <body class="tab-9x9">
@@ -176,13 +195,13 @@
         25x25
       </div>
     </div>
-
-    <form>
-      <label for="limit">生成の上限:</label>
+    
+    <form class="limit-form">
+      <label for="limit">生成の上限 :</label>
       <input type="number" id="limit" name="limit" value="100" min="1" step="1" required>
       <label for="limit">盤面</label>
-    </form>    
-
+    </form>   
+    
     <form id="sudoku-form" style="text-align: center">
       <table border="1" class="sudoku-grid" id="sudoku-grid"></table>
       <button type="submit" class="submit-button">生成</button>
