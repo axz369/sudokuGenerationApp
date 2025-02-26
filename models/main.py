@@ -26,11 +26,15 @@ def generate_sudoku(board):
     input_data = data['input']
     size = int(input_data['size'])
     board = input_data['board']
+    limit = int(input_data['limit'])
+    
 
     print("サイズ")
     print(size)
     print("ボード")
     print(board)
+    print("上限盤面数")
+    print(limit)
 
     # 盤面内の空データを文字列の "0" に変換する
     for i in range(size):
@@ -48,16 +52,16 @@ def generate_sudoku(board):
 
     # 最大解数とターゲットヒント数を設定
     if size == 9:
-        MAX_SOLUTIONS = 100
+        MAX_SOLUTIONS = limit
         TARGET_HINT_COUNT = 16
     elif size == 16:
-        MAX_SOLUTIONS = 10
+        MAX_SOLUTIONS = limit
         TARGET_HINT_COUNT = 51
     elif size == 25:
-        MAX_SOLUTIONS = 20
+        MAX_SOLUTIONS = limit
         TARGET_HINT_COUNT = 250
     else:
-        MAX_SOLUTIONS = 10
+        MAX_SOLUTIONS = limit
         TARGET_HINT_COUNT = 20
 
     # 盤面の文字を数値に変換
