@@ -177,7 +177,6 @@
     <!-- 利用方法ボタン -->
     <a href="{{ url_for('guide') }}" class="guide-button">利用方法</a>
 
-    
     <h1 id="title" style="text-align: center">数独の問題例生成</h1>
     <div class="tab-container">
       <div
@@ -214,6 +213,9 @@
     </div>
 
     <div id="result"></div>
+
+    <!-- html2canvas ライブラリを追加 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
       // 現在のサブグリッドサイズ
@@ -429,7 +431,27 @@
         }
 
         return isValid;
-        }
+      }
+
+      // 画像としてダウンロードする関数
+      function downloadAsImage(element, filename) {
+        // 対象要素内の表（グリッド部分）を選択
+        const gridTable = element.querySelector('.sudoku-grid');
+        
+        html2canvas(gridTable, {
+          backgroundColor: "white",
+          scale: 2, // 解像度を2倍に
+        }).then(canvas => {
+          // Canvas をデータURLに変換
+          const dataUrl = canvas.toDataURL("image/png");
+          
+          // ダウンロードリンクを作成
+          const link = document.createElement("a");
+          link.href = dataUrl;
+          link.download = filename;
+          link.click();
+        });
+      }
 
       // ---------------------------
       // フォーム送信時の処理
@@ -503,13 +525,14 @@
                 data.solutionBoard &&
                 data.generationTime
               ) {
-                function createSudokuTable(board, title, hiddenZeros = false) {
+                function createSudokuTable(board, title, hiddenZeros = false, id = null) {
                   let html = `<h2 style="text-align: center;">${title}</h2>`;
-                  html += '<table class="sudoku-grid">';
+                  html += `<div ${id ? `id="${id}"` : ''} class="sudoku-container" style="margin-bottom: 20px;">`;
+                  html += '<table class="sudoku-grid" style="margin: 0 auto; border-collapse: collapse; border: 2px solid #000;">'; // Added outer border to table
 
                   const size = board.length;
                   const subgridSize = currentSubgridSize;
-  
+
                   for (let i = 0; i < size; i++) {
                     html += "<tr>";
                     for (let j = 0; j < size; j++) {
@@ -517,11 +540,27 @@
                         hiddenZeros && board[i][j] === "0" ? "" : board[i][j];
 
                       // 境界線のスタイル設定
-                      let tdStyle = "";
+                      let tdStyle = "border: 1px solid #888; padding: 8px; width: 30px; height: 30px; text-align: center;";
+                      
+                      // サブグリッド境界線の設定
                       if ((i + 1) % subgridSize === 0 && i < size - 1) {
                         tdStyle += "border-bottom: 2px solid #000;";
                       }
                       if ((j + 1) % subgridSize === 0 && j < size - 1) {
+                        tdStyle += "border-right: 2px solid #000;";
+                      }
+                      
+                      // 外枠の設定
+                      if (i === 0) {
+                        tdStyle += "border-top: 2px solid #000;";
+                      }
+                      if (i === size - 1) {
+                        tdStyle += "border-bottom: 2px solid #000;";
+                      }
+                      if (j === 0) {
+                        tdStyle += "border-left: 2px solid #000;";
+                      }
+                      if (j === size - 1) {
                         tdStyle += "border-right: 2px solid #000;";
                       }
 
@@ -536,13 +575,32 @@
                     html += "</tr>";
                   }
                   html += "</table>";
+                  
+                  // ダウンロードボタンを追加
+                  if (id) {
+                    html += `<div style="text-align: center; margin-top: 10px;">
+                              <button class="download-button" data-target="${id}">PNGとしてダウンロード</button>
+                            </div>`;
+                  }
+                  
+                  html += "</div>";
                   return html;
                 }
 
                 document.getElementById("result").innerHTML =
-                  createSudokuTable(data.problemBoard, "問題盤面", true) +
-                  createSudokuTable(data.solutionBoard, "解盤面") +
+                  createSudokuTable(data.problemBoard, "問題盤面", true, "problem-board") +
+                  createSudokuTable(data.solutionBoard, "解盤面", false, "solution-board") +
                   `<h2 style="text-align: center;">生成時間</h2><p style="text-align: center;">${data.generationTime}秒</p>`;
+                
+                // ダウンロードボタンのイベントを設定
+                document.querySelectorAll('.download-button').forEach(button => {
+                  button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    const filename = targetId === 'problem-board' ? 'sudoku-problem.png' : 'sudoku-solution.png';
+                    downloadAsImage(targetElement, filename);
+                  });
+                });
               } else {
                 document.getElementById("result").innerHTML =
                   '<div class="error-message">不正な入力:解盤面を生成できない入力の可能性があります</div>';
