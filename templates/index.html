@@ -171,6 +171,12 @@
         padding: 2px 5px;
       }
 
+      .generationTimeGuide{
+        margin-top: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
     </style>
   </head>
   <body class="tab-9x9">
@@ -200,6 +206,13 @@
       <input type="number" id="limit" name="limit" value="100" min="1" step="1" required>
       <label for="limit">盤面</label>
     </form>   
+
+    <div class = "generationTimeGuide">
+      <p>生成時間の目安</p>
+      <p>9×9 (上限盤面 : 100盤面の時)   : 〇〇秒</p>
+      <p>16×16 (上限盤面 : 50盤面の時) : 〇〇分</p>
+      <p>25×25 (上限盤面 : 10盤面の時) : 〇〇分</p>
+    </div>
     
     <form id="sudoku-form" style="text-align: center">
       <table border="1" class="sudoku-grid" id="sudoku-grid"></table>
