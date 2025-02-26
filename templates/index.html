@@ -225,6 +225,7 @@
       const sudokuGrid = document.getElementById("sudoku-grid");
       const body = document.body;
       const limit = parseInt(document.getElementById("limit").value)
+      const limitInput = document.getElementById("limit");
 
       tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
@@ -238,6 +239,15 @@
           // サイズの切り替え
           const size = parseInt(tab.getAttribute("data-size"));
           currentSubgridSize = parseInt(tab.getAttribute("data-subgrid"));
+
+          // サイズに応じて生成の上限を設定
+          if (size === 9) {
+            limitInput.value = 100;
+          } else if (size === 16) {
+            limitInput.value = 50;
+          } else if (size === 25) {
+            limitInput.value = 10;
+          }
 
           // グリッドの再描画
           renderSudokuGrid(size);
